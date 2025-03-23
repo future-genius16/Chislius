@@ -1,3 +1,9 @@
 spring:
   application:
     name: chislius_server
+
+config:
+  room:
+    capacity:
+      public: 3
+      private: 6
