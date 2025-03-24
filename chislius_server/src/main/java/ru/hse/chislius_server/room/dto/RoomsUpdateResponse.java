@@ -10,9 +10,10 @@ public class RoomsUpdateResponse {
     public RoomsUpdateResponse(List<AbstractRoom> rooms) {
         StringBuilder sb = new StringBuilder();
         for (AbstractRoom room : rooms) {
+            sb.append("<br>");
             sb.append(room);
-            sb.append("\n");
         }
+        sb.append("<br>");
         state = sb.toString();
     }
 

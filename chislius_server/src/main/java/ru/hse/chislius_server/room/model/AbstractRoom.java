@@ -5,12 +5,16 @@ import lombok.Setter;
 import lombok.ToString;
 import ru.hse.chislius_server.user.User;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @ToString
 public abstract class AbstractRoom {
-    protected final Set<User> users = new HashSet<>();
+    protected final List<User> users = new ArrayList<>();
     private final int capacity;
 
     @Getter
@@ -32,6 +36,10 @@ public abstract class AbstractRoom {
 
     public String join(User user) {
         if (!isStarted() && users.size() < capacity && users.add(user)) {
+            if (user.getCurrentRoom() != null) {
+                user.getCurrentRoom().leave(user);
+            }
+            user.setCurrentRoom(this);
             onJoin(user);
             return code;
         }

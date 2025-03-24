@@ -1,4 +1,4 @@
-package ru.hse.chislius_server;
+package ru.hse.chislius_server.room.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,7 +28,7 @@ public class RoomController {
     @SendTo("/topic/rooms-updates")
     public RoomsUpdateResponse connectPublic(ConnectPublicRoomRequest request) {
         log.info("Received connect-public request: " + request);
-        User user = new User(request.getUsername());
+        User user = roomService.getUser(request.getUsername());
         try {
             String connectedCode = roomService.joinPublicRoom(user);
             RoomCodeResponse response = new RoomCodeResponse(connectedCode);
@@ -44,7 +44,7 @@ public class RoomController {
     @SendTo("/topic/rooms-updates")
     public RoomsUpdateResponse createPrivate(CreatePrivateRoomRequest request) {
         log.info("Received create-private request: " + request);
-        User user = new User(request.getUsername());
+        User user = roomService.getUser(request.getUsername());
         try {
             String connectedCode = roomService.createPrivateRoom(user);
             RoomCodeResponse response = new RoomCodeResponse(connectedCode);
@@ -60,7 +60,7 @@ public class RoomController {
     @SendTo("/topic/rooms-updates")
     public RoomsUpdateResponse connectPrivate(ConnectPrivateRoomRequest request) {
         log.info("Received connect-private request: " + request);
-        User user = new User(request.getUsername());
+        User user = roomService.getUser(request.getUsername());
         String connectedCode = roomService.joinPrivateRoom(user, request.getCode());
         if (connectedCode != null) {
             RoomCodeResponse response = new RoomCodeResponse(connectedCode);

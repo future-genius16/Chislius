@@ -20,6 +20,8 @@ public class RoomService {
     @Getter
     private final Map<String, AbstractRoom> roomMap = new HashMap<>();
 
+    private final Map<String, User> userMap = new HashMap<>();
+
     @Value("${config.room.capacity.public}")
     private int PUBLIC_ROOM_CAPACITY;
 
@@ -71,5 +73,12 @@ public class RoomService {
     private String generateRoomCode() {
         int number = random.nextInt(1000000);
         return String.format("%06d", number);
+    }
+
+    public User getUser(String username){
+        if (!userMap.containsKey(username)) {
+            userMap.put(username, new User(username));
+        }
+        return userMap.get(username);
     }
 }
