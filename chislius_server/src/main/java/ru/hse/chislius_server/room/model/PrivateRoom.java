@@ -8,7 +8,6 @@ public class PrivateRoom extends AbstractRoom {
     public PrivateRoom(int capacity, User owner) {
         super(capacity, false);
         this.owner = owner;
-        join(owner);
     }
 
     @Override

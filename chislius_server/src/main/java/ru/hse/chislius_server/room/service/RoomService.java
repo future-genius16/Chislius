@@ -2,21 +2,29 @@ package ru.hse.chislius_server.room.service;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+import ru.hse.chislius_server.room.dto.RoomsUpdateResponse;
+import ru.hse.chislius_server.room.exception.UnableConnectRoomException;
 import ru.hse.chislius_server.room.exception.UnableCreateRoomException;
 import ru.hse.chislius_server.room.model.AbstractRoom;
 import ru.hse.chislius_server.room.model.PrivateRoom;
 import ru.hse.chislius_server.room.model.PublicRoom;
 import ru.hse.chislius_server.user.User;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
 @RequiredArgsConstructor
 @Service
+@Slf4j
 public class RoomService {
+    private final SimpMessagingTemplate messagingTemplate;
+
     @Getter
     private final Map<String, AbstractRoom> roomMap = new HashMap<>();
 
@@ -31,31 +39,41 @@ public class RoomService {
     private AbstractRoom lastPublicRoom;
     private final Random random = new Random();
 
-    public String joinPublicRoom(User user) throws UnableCreateRoomException {
-        if (lastPublicRoom == null || lastPublicRoom.isStarted()) {
-            lastPublicRoom = new PublicRoom(PUBLIC_ROOM_CAPACITY);
-            addRoomToMap(lastPublicRoom);
-        }
-        return lastPublicRoom.join(user);
+    public void update() {
+        broadcastRooms();
     }
 
     public String createPrivateRoom(User owner) throws UnableCreateRoomException {
         PrivateRoom room = new PrivateRoom(PRIVATE_ROOM_CAPACITY, owner);
         addRoomToMap(room);
-        return room.getCode();
+        String code = room.join(owner);
+        broadcastRooms();
+        return code;
     }
 
-    public String joinPrivateRoom(User user, String code) {
+    public String joinPrivateRoom(User user, String code) throws UnableConnectRoomException {
         if (roomMap.containsKey(code)) {
             AbstractRoom room = roomMap.get(code);
             if (!room.isOpen()) {
-                return room.join(user);
+                code = room.join(user);
+                broadcastRooms();
+                return code;
             }
         }
-        return null;
+        throw new UnableConnectRoomException();
     }
 
-    public synchronized void addRoomToMap(AbstractRoom room) throws UnableCreateRoomException {
+    public String joinPublicRoom(User user) throws UnableCreateRoomException {
+        if (lastPublicRoom == null || lastPublicRoom.isStarted()) {
+            lastPublicRoom = new PublicRoom(PUBLIC_ROOM_CAPACITY);
+            addRoomToMap(lastPublicRoom);
+        }
+        String code = lastPublicRoom.join(user);
+        broadcastRooms();
+        return code;
+    }
+
+    private synchronized void addRoomToMap(AbstractRoom room) throws UnableCreateRoomException {
         int counter = 0;
         while (counter < 10) {
             String code = generateRoomCode();
@@ -75,10 +93,15 @@ public class RoomService {
         return String.format("%06d", number);
     }
 
-    public User getUser(String username){
+    public User getUser(String username) {
         if (!userMap.containsKey(username)) {
             userMap.put(username, new User(username));
         }
         return userMap.get(username);
+    }
+
+    private void broadcastRooms() {
+        messagingTemplate.convertAndSend("/topic/rooms-updates", new RoomsUpdateResponse(new ArrayList<>()));
+        log.info("Send rooms broadcast {}", roomMap);
     }
 }
