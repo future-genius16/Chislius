@@ -24,13 +24,3 @@ config:
     capacity:
       public: 3
       private: 6
-
-
-logging:
-  level:
-    root: info
-
-
-logging:
-  level:
-    root: info

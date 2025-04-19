@@ -6,6 +6,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+import ru.hse.chislius_server.room.dto.CreatePrivateRoomRequest;
+import ru.hse.chislius_server.room.dto.RoomCodeResponse;
 import ru.hse.chislius_server.room.dto.RoomsUpdateResponse;
 import ru.hse.chislius_server.room.exception.UnableConnectRoomException;
 import ru.hse.chislius_server.room.exception.UnableCreateRoomException;
@@ -13,6 +15,7 @@ import ru.hse.chislius_server.room.model.AbstractRoom;
 import ru.hse.chislius_server.room.model.PrivateRoom;
 import ru.hse.chislius_server.room.model.PublicRoom;
 import ru.hse.chislius_server.user.User;
+import ru.hse.chislius_server.user.service.UserService;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -24,11 +27,10 @@ import java.util.Random;
 @Slf4j
 public class RoomService {
     private final SimpMessagingTemplate messagingTemplate;
+    private final UserService userService;
 
     @Getter
     private final Map<String, AbstractRoom> roomMap = new HashMap<>();
-
-    private final Map<String, User> userMap = new HashMap<>();
 
     @Value("${config.room.capacity.public}")
     private int PUBLIC_ROOM_CAPACITY;
@@ -39,41 +41,45 @@ public class RoomService {
     private AbstractRoom lastPublicRoom;
     private final Random random = new Random();
 
-    public void update() {
+    public void ping() {
         broadcastRooms();
     }
 
-    public String createPrivateRoom(User owner) throws UnableCreateRoomException {
+    public RoomCodeResponse createPrivateRoom(CreatePrivateRoomRequest request) {
+        User owner = userService.getCurrentUser();
         PrivateRoom room = new PrivateRoom(PRIVATE_ROOM_CAPACITY, owner);
         addRoomToMap(room);
-        String code = room.join(owner);
+        String roomId = room.join(owner);
         broadcastRooms();
-        return code;
+        return new RoomCodeResponse(roomId);
     }
 
-    public String joinPrivateRoom(User user, String code) throws UnableConnectRoomException {
-        if (roomMap.containsKey(code)) {
-            AbstractRoom room = roomMap.get(code);
-            if (!room.isOpen()) {
-                code = room.join(user);
-                broadcastRooms();
-                return code;
-            }
+    public RoomCodeResponse joinPrivateRoom(String roomId) {
+        User user = userService.getCurrentUser();
+        if (!roomMap.containsKey(roomId)) {
+            throw new UnableConnectRoomException("Room is not exist");
         }
-        throw new UnableConnectRoomException();
+        AbstractRoom room = roomMap.get(roomId);
+        if (room.isOpen()) {
+            throw new UnableConnectRoomException("Can connect only private room");
+        }
+        roomId = room.join(user);
+        broadcastRooms();
+        return new RoomCodeResponse(roomId);
     }
 
-    public String joinPublicRoom(User user) throws UnableCreateRoomException {
+    public RoomCodeResponse joinPublicRoom() {
+        User user = userService.getCurrentUser();
         if (lastPublicRoom == null || lastPublicRoom.isStarted()) {
             lastPublicRoom = new PublicRoom(PUBLIC_ROOM_CAPACITY);
             addRoomToMap(lastPublicRoom);
         }
-        String code = lastPublicRoom.join(user);
+        String roomId = lastPublicRoom.join(user);
         broadcastRooms();
-        return code;
+        return new RoomCodeResponse(roomId);
     }
 
-    private synchronized void addRoomToMap(AbstractRoom room) throws UnableCreateRoomException {
+    private synchronized void addRoomToMap(AbstractRoom room) {
         int counter = 0;
         while (counter < 10) {
             String code = generateRoomCode();
@@ -91,13 +97,6 @@ public class RoomService {
     private String generateRoomCode() {
         int number = random.nextInt(1000000);
         return String.format("%06d", number);
-    }
-
-    public User getUser(String username) {
-        if (!userMap.containsKey(username)) {
-            userMap.put(username, new User(username));
-        }
-        return userMap.get(username);
     }
 
     private void broadcastRooms() {

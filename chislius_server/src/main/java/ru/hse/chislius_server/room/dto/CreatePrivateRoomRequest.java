@@ -4,5 +4,5 @@ import lombok.Data;
 
 @Data
 public class CreatePrivateRoomRequest {
-    private final String username;
+    private final String name;
 }
