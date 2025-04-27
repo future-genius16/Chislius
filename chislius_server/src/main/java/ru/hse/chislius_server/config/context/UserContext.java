@@ -4,17 +4,17 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class UserContext {
-    private final ThreadLocal<Long> userIdHolder = new ThreadLocal<>();
+    private final ThreadLocal<String> userTokenHolder = new ThreadLocal<>();
 
-    public void setUserId(long userId) {
-        userIdHolder.set(userId);
+    public void setUserToken(String token) {
+        userTokenHolder.set(token);
     }
 
-    public Long getUserId() {
-        return userIdHolder.get();
+    public String getUserToken() {
+        return userTokenHolder.get();
     }
 
     public void clear() {
-        userIdHolder.remove();
+        userTokenHolder.remove();
     }
 }

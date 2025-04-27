@@ -8,6 +8,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import ru.hse.chislius_server.room.dto.CreatePrivateRoomRequest;
 import ru.hse.chislius_server.room.dto.RoomCodeResponse;
+import ru.hse.chislius_server.room.dto.RoomResponse;
 import ru.hse.chislius_server.room.dto.RoomsUpdateResponse;
 import ru.hse.chislius_server.room.exception.UnableConnectRoomException;
 import ru.hse.chislius_server.room.exception.UnableCreateRoomException;
@@ -56,10 +57,7 @@ public class RoomService {
 
     public RoomCodeResponse joinPrivateRoom(String roomId) {
         User user = userService.getCurrentUser();
-        if (!roomMap.containsKey(roomId)) {
-            throw new UnableConnectRoomException("Room is not exist");
-        }
-        AbstractRoom room = roomMap.get(roomId);
+        AbstractRoom room = get(roomId);
         if (room.isOpen()) {
             throw new UnableConnectRoomException("Can connect only private room");
         }
@@ -77,6 +75,22 @@ public class RoomService {
         String roomId = lastPublicRoom.join(user);
         broadcastRooms();
         return new RoomCodeResponse(roomId);
+    }
+
+    public RoomResponse getRoom(String roomId) {
+        return new RoomResponse(get(roomId));
+    }
+
+    public void deleteRoom(String roomId) {
+        AbstractRoom room = get(roomId);
+        roomMap.remove(roomId);
+    }
+
+    private AbstractRoom get(String roomId) {
+        if (!roomMap.containsKey(roomId)) {
+            throw new UnableConnectRoomException("AbstractRoom is not exist");
+        }
+        return roomMap.get(roomId);
     }
 
     private synchronized void addRoomToMap(AbstractRoom room) {

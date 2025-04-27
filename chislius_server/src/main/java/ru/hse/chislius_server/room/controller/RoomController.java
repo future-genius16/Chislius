@@ -1,6 +1,8 @@
 package ru.hse.chislius_server.room.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,7 +26,7 @@ public class RoomController {
         return roomService.createPrivateRoom(request);
     }
 
-    @PostMapping("{roomId}/connect")
+    @PostMapping("/{roomId}/connect")
     public RoomCodeResponse connectPrivate(@PathVariable String roomId) {
         return roomService.joinPrivateRoom(roomId);
     }
@@ -32,5 +34,15 @@ public class RoomController {
     @PostMapping("/connect")
     public RoomCodeResponse connectPublic() {
         return roomService.joinPublicRoom();
+    }
+
+    @GetMapping("/{roomId}")
+    public RoomResponse get(@PathVariable String roomId) {
+        return roomService.getRoom(roomId);
+    }
+
+    @DeleteMapping("/{roomId}")
+    public void delete(@PathVariable String roomId) {
+        roomService.deleteRoom(roomId);
     }
 }

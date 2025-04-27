@@ -16,9 +16,9 @@ public class UserHeaderFilter implements Filter {
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws ServletException, IOException {
         HttpServletRequest req = (HttpServletRequest) request;
-        String userId = req.getHeader("x-user-id");
-        if (userId != null) {
-            userContext.setUserId(Long.parseLong(userId));
+        String token = req.getHeader("x-user-token");
+        if (token != null) {
+            userContext.setUserToken(token);
         }
         try {
             chain.doFilter(request, response);
