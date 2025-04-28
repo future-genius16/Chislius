@@ -1,0 +1,74 @@
+.button {
+    background: none;
+    box-shadow: none;
+    border: none;
+    outline: none;
+
+    display: block;
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+    transition: .5s ease-in-out;
+}
+
+.button:hover:not(:disabled) {
+    cursor: pointer;
+}
+
+.form {
+    font-size: 1.5rem;
+    font-weight: normal;
+    letter-spacing: .1rem;
+    text-align: center;
+
+    border: 1px solid #999;
+    border-radius: 5px;
+
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 12vmin;
+    max-width: 80vmin;
+    min-width: 312px;
+
+    padding: 10px;
+    margin: 10px 0;
+
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: stretch;
+}
+
+.form__btn-container {
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+    flex-grow: 1;
+
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: stretch;
+    align-items: stretch;
+}
+
+.form__btn {
+    flex-grow: 1;
+    min-width: 40px;
+    min-height: 40px;
+
+    border: 1px solid #999;
+    border-radius: 5px;
+
+    background-color: #a2f88a;
+    background-repeat: no-repeat;
+    background-size: 30%;
+    background-position: center center;
+    background-blend-mode: multiply;
+}
+
+.form__btn:hover:not(:disabled) {
+    background-color: #35ff00;
+}
+
+.form__btn:disabled {
+    background-color: #f88a8a;
+}
