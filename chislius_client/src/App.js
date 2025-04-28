@@ -1,9 +1,10 @@
-import './App.css';
+import {Fragment} from "react";
+import GameScreen from './components/screen/GameScreen';
 
 function App() {
-    return (
-        <b>Chislius App</b>
-    );
+    return (<Fragment>
+        <GameScreen/>
+    </Fragment>);
 }
 
 export default App;
