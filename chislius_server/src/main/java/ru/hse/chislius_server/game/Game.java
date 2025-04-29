@@ -2,7 +2,7 @@ package ru.hse.chislius_server.game;
 
 public class Game {
     public static void main(String[] args) {
-        Board board = new Board();
+        Board board = new Board(GameMode.MEDIUM);
         board.doMove();
         System.out.println(board);
 

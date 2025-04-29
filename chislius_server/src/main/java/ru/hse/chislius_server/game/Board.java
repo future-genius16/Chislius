@@ -9,13 +9,16 @@ import java.util.Set;
 
 public class Board implements BoardInterface {
     private static final int SIZE = 4;
+    private final GameMode gameMode;
     private final Set<Card> openCards;
     private final List<Card> cards;
     private final LinkedList<Card> cardPool;
     private final List<Potion> potions;
     private final LinkedList<Potion> potionPool;
 
-    public Board() {
+    public Board(GameMode gameMode) {
+        this.gameMode = gameMode;
+
         cardPool = new LinkedList<>();
         generateCardsPool();
 
@@ -49,14 +52,25 @@ public class Board implements BoardInterface {
 
     public int doMove() {
         int sum = 0;
+        Color color = null;
         for (Card card : openCards) {
             sum += card.getValue();
+            if (color == null) {
+                color = card.getColor();
+            } else {
+                color = color.combine(card.getColor());
+            }
         }
+
         for (Potion potion : potions) {
-            if (potion.getQuantity() == openCards.size() && potion.getValue() == sum) {
-                dropOpenCards();
-                dropPotion(potion);
-                return potion.getValue();
+            if (gameMode.equals(GameMode.EASY) || potion.getQuantity() == openCards.size()) {
+                if (!gameMode.equals(GameMode.HARD) || potion.getColor().equals(color)) {
+                    if (potion.getValue() == sum) {
+                        dropOpenCards();
+                        dropPotion(potion);
+                        return potion.getValue();
+                    }
+                }
             }
         }
         flipOpenCards();
@@ -69,28 +83,21 @@ public class Board implements BoardInterface {
 
     public boolean canMove() {
         for (Potion potion : potions) {
-            if (potion.getQuantity() == 2) {
-                for (int i1 = 0; i1 < SIZE * SIZE; i1++) {
-                    Card card1 = cardPool.get(i1);
-                    if (card1 != null && card1.getValue() < potion.getValue()) {
-                        for (int i2 = i1 + 1; i2 < SIZE * SIZE; i2++) {
-                            Card card2 = cardPool.get(i2);
-                            if (card2 != null && card1.getValue() + card2.getValue() == potion.getValue()) {
-                                return true;
+            for (int i1 = 0; i1 < SIZE * SIZE; i1++) {
+                Card card1 = cardPool.get(i1);
+                if (card1 != null && card1.getValue() < potion.getValue() && checkColorNotUnknown(card1.getColor().combine(potion.getColor()))) {
+                    for (int i2 = i1 + 1; i2 < SIZE * SIZE; i2++) {
+                        Card card2 = cardPool.get(i2);
+                        if (card2 != null) {
+                            if (gameMode.equals(GameMode.EASY) || potion.getQuantity() == 2) {
+                                if (card1.getValue() + card2.getValue() == potion.getValue() && (!gameMode.equals(GameMode.HARD) || card1.getColor().combine(card2.getColor()).equals(potion.getColor()))) {
+                                    return true;
+                                }
                             }
-                        }
-                    }
-                }
-            } else if (potion.getQuantity() == 3) {
-                for (int i1 = 0; i1 < SIZE * SIZE; i1++) {
-                    Card card1 = cardPool.get(i1);
-                    if (card1 != null && card1.getValue() < potion.getValue()) {
-                        for (int i2 = i1 + 1; i2 < SIZE * SIZE; i2++) {
-                            Card card2 = cardPool.get(i2);
-                            if (card2 != null && card1.getValue() + card2.getValue() < potion.getValue()) {
+                            if (gameMode.equals(GameMode.EASY) || potion.getQuantity() == 3) {
                                 for (int i3 = i2 + 1; i3 < SIZE * SIZE; i3++) {
                                     Card card3 = cardPool.get(i3);
-                                    if (card3 != null && card1.getValue() + card2.getValue() + card3.getValue() == potion.getValue()) {
+                                    if (card3 != null && card1.getValue() + card2.getValue() + card3.getValue() == potion.getValue() && checkColorEquals(card1.getColor().combine(card2.getColor()).combine(card3.getColor()), potion.getColor())) {
                                         return true;
                                     }
                                 }
@@ -101,6 +108,14 @@ public class Board implements BoardInterface {
             }
         }
         return false;
+    }
+
+    private boolean checkColorEquals(Color left, Color right) {
+        return !gameMode.equals(GameMode.HARD) || left.equals(right);
+    }
+
+    private boolean checkColorNotUnknown(Color color) {
+        return !gameMode.equals(GameMode.HARD) || !color.equals(Color.UNKNOWN);
     }
 
 

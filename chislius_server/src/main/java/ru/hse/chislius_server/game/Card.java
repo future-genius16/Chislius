@@ -6,12 +6,17 @@ import lombok.Setter;
 @Getter
 @Setter
 public class Card {
-    private final int color;
+    private final Color color;
     final int value;
     private boolean open;
 
     public Card(int color, int value) {
-        this.color = color;
+        this.color = switch (color - 1) {
+            case 0 -> Color.BLUE;
+            case 1 -> Color.RED;
+            case 2 -> Color.YELLOW;
+            default -> Color.UNKNOWN;
+        };
         this.value = value;
         this.open = false;
     }
