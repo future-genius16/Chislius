@@ -1,4 +1,4 @@
-package ru.hse.chislius_server.room.model;
+package ru.hse.chislius_server.model.room;
 
 public enum RoomState {
     WAITING_FOR_PLAYERS,

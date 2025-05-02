@@ -1,19 +1,15 @@
-package ru.hse.chislius_server.room.model;
+package ru.hse.chislius_server.model.room;
 
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import ru.hse.chislius_server.user.User;
+import ru.hse.chislius_server.model.User;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 @ToString
-public abstract class AbstractRoom {
+public abstract class Room {
     protected final List<User> users = new ArrayList<>();
     private final int capacity;
 
@@ -28,7 +24,7 @@ public abstract class AbstractRoom {
     @Setter
     private String code;
 
-    public AbstractRoom(int capacity, boolean open) {
+    public Room(int capacity, boolean open) {
         this.capacity = capacity;
         this.open = open;
         this.state = RoomState.WAITING_FOR_PLAYERS;

@@ -1,12 +1,12 @@
-package ru.hse.chislius_server.user.controller;
+package ru.hse.chislius_server.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-import ru.hse.chislius_server.user.dto.UserLoginRequest;
-import ru.hse.chislius_server.user.dto.UserRegisterRequest;
-import ru.hse.chislius_server.user.dto.UserResponse;
-import ru.hse.chislius_server.user.dto.UserTokenResponse;
-import ru.hse.chislius_server.user.service.UserService;
+import ru.hse.chislius_server.dto.user.UserLoginRequest;
+import ru.hse.chislius_server.dto.user.UserRegisterRequest;
+import ru.hse.chislius_server.dto.user.UserResponse;
+import ru.hse.chislius_server.dto.user.UserTokenResponse;
+import ru.hse.chislius_server.service.UserService;
 
 @RequiredArgsConstructor
 @RestController

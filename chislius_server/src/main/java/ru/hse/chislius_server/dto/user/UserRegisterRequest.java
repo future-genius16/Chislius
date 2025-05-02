@@ -1,9 +1,9 @@
-package ru.hse.chislius_server.user.dto;
+package ru.hse.chislius_server.dto.user;
 
 import lombok.Data;
 
 @Data
-public class UserLoginRequest {
+public class UserRegisterRequest {
     private final String username;
     private final String password;
 }

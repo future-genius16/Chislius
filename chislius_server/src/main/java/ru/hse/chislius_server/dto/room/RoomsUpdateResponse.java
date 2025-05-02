@@ -1,15 +1,15 @@
-package ru.hse.chislius_server.room.dto;
+package ru.hse.chislius_server.dto.room;
 
 import lombok.Data;
-import ru.hse.chislius_server.room.model.AbstractRoom;
+import ru.hse.chislius_server.model.room.Room;
 
 import java.util.List;
 
 @Data
 public class RoomsUpdateResponse {
-    public RoomsUpdateResponse(List<AbstractRoom> rooms) {
+    public RoomsUpdateResponse(List<Room> rooms) {
         StringBuilder sb = new StringBuilder();
-        for (AbstractRoom room : rooms) {
+        for (Room room : rooms) {
             sb.append("<br>");
             sb.append(room);
         }

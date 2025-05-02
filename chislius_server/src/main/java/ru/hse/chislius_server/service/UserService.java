@@ -1,16 +1,18 @@
-package ru.hse.chislius_server.user.service;
+package ru.hse.chislius_server.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.hse.chislius_server.config.context.UserContext;
-import ru.hse.chislius_server.user.User;
-import ru.hse.chislius_server.user.dto.UserLoginRequest;
-import ru.hse.chislius_server.user.dto.UserRegisterRequest;
-import ru.hse.chislius_server.user.dto.UserResponse;
-import ru.hse.chislius_server.user.dto.UserTokenResponse;
-import ru.hse.chislius_server.user.exception.UnableRegisterUserException;
-import ru.hse.chislius_server.user.exception.UserNotFoundException;
+import ru.hse.chislius_server.exception.AuthorizationException;
+import ru.hse.chislius_server.exception.DataValidationException;
+import ru.hse.chislius_server.exception.EntityNotFoundException;
+import ru.hse.chislius_server.exception.GenerationTimeoutException;
+import ru.hse.chislius_server.model.User;
+import ru.hse.chislius_server.dto.user.UserLoginRequest;
+import ru.hse.chislius_server.dto.user.UserRegisterRequest;
+import ru.hse.chislius_server.dto.user.UserResponse;
+import ru.hse.chislius_server.dto.user.UserTokenResponse;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,7 +32,7 @@ public class UserService {
     public User getCurrentUser() {
         String token = userContext.getUserToken();
         if (token == null) {
-            throw new UserNotFoundException("User required");
+            throw new AuthorizationException("User required");
         }
         return getByToken(token);
     }
@@ -45,7 +47,7 @@ public class UserService {
     public UserTokenResponse login(UserLoginRequest request) {
         User user = getUserByUsername(request.getUsername());
         if (!user.getPassword().equals(request.getPassword())) {
-            throw new UnableRegisterUserException("Incorrect password");
+            throw new DataValidationException("Incorrect password");
         }
         String token = addUserToTokenMap(user);
         return new UserTokenResponse(token);
@@ -59,7 +61,7 @@ public class UserService {
     private void addUserToUserMap(User user) {
         synchronized (userMap) {
             if (userMap.containsKey(user.getUsername())) {
-                throw new IllegalStateException("User already exists");
+                throw new DataValidationException("Username already used");
             }
             userMap.put(user.getUsername(), user);
         }
@@ -78,7 +80,7 @@ public class UserService {
                 }
             }
         }
-        throw new UnableRegisterUserException("Please try again");
+        throw new GenerationTimeoutException();
     }
 
     private String generateToken() {
@@ -88,14 +90,14 @@ public class UserService {
 
     private User getByToken(String token) {
         if (!tokenMap.containsKey(token)) {
-            throw new UserNotFoundException("User not found");
+            throw new EntityNotFoundException("User not found");
         }
         return tokenMap.get(token);
     }
 
     private User getUserByUsername(String username) {
         if (!userMap.containsKey(username)) {
-            throw new UserNotFoundException("User not found");
+            throw new EntityNotFoundException("User not found");
         }
         return userMap.get(username);
     }

@@ -1,8 +1,8 @@
-package ru.hse.chislius_server.room.model;
+package ru.hse.chislius_server.model.room;
 
-import ru.hse.chislius_server.user.User;
+import ru.hse.chislius_server.model.User;
 
-public class PrivateRoom extends AbstractRoom {
+public class PrivateRoom extends Room {
     private User owner;
 
     public PrivateRoom(int capacity, User owner) {

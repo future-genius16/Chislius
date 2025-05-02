@@ -1,7 +1,7 @@
-package ru.hse.chislius_server.user.dto;
+package ru.hse.chislius_server.dto.user;
 
 import lombok.Data;
-import ru.hse.chislius_server.user.User;
+import ru.hse.chislius_server.model.User;
 
 @Data
 public class UserResponse {
