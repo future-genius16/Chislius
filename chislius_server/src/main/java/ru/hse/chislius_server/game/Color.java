@@ -7,7 +7,7 @@ public enum Color {
             return switch (color) {
                 case BLUE -> BLUE;
                 case YELLOW, GREEN -> GREEN;
-                case RED, PURPLE -> PURPLE;
+                case RED, VIOLET -> VIOLET;
                 default -> UNKNOWN;
             };
         }
@@ -26,7 +26,7 @@ public enum Color {
         public Color combine(Color color) {
             return switch (color) {
                 case RED -> RED;
-                case BLUE, PURPLE -> PURPLE;
+                case BLUE, VIOLET -> VIOLET;
                 case YELLOW, ORANGE -> ORANGE;
                 default -> UNKNOWN;
             };
@@ -41,11 +41,11 @@ public enum Color {
         }
     },
 
-    PURPLE {
+    VIOLET {
         @Override
         public Color combine(Color color) {
             return switch (color) {
-                case PURPLE, BLUE, RED -> PURPLE;
+                case VIOLET, BLUE, RED -> VIOLET;
                 default -> UNKNOWN;
             };
         }

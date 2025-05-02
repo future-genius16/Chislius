@@ -10,19 +10,14 @@ public class Potion {
     private final int value;
     private final int quantity;
 
-    public Potion(int color, int value, int quantity) {
-        this.color = switch (color - 1) {
-            case 0 -> Color.BLUE;
-            case 1 -> Color.RED;
-            case 2 -> Color.YELLOW;
-            default -> Color.UNKNOWN;
-        };
+    public Potion(int value, Color color, int quantity) {
         this.value = value;
+        this.color = color;
         this.quantity = quantity;
     }
 
     @Override
     public String toString() {
-        return "[" + color + " " + value + " " + quantity + ']';
+        return "[" + value + " " + color + " " + quantity + ']';
     }
 }
