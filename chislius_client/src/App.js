@@ -1,4 +1,8 @@
 import {Fragment, useEffect, useState} from "react"
+import MenuScreen from "./components/screen/MenuScreen"
+import RoomScreen from "./components/screen/RoomScreen"
+import EndScreen from "./components/screen/EndScreen"
+import GameScreen from "./components/screen/GameScreen"
 
 const States = {
     MENU: 0, ROOM: 1, GAME: 2, MOVE: 3, END: 4
@@ -23,12 +27,25 @@ function App() {
         const message_2 = {
             state: States.GAME, players: [{id: 1, name: "Player1", score: 100}, {id: 2, name: "Player2", score: 50}, {
                 id: 12, name: "Player3", score: 25
-            }], potions: [1, 2, 3], cards: [1, 2, 3, null, 5, 6, null, 8],
-        }
-        const message_3 = {
-            state: States.MOVE, players: [{id: 1, name: "Player1", score: 100}, {id: 2, name: "Player2", score: 50}, {
-                id: 12, name: "Player3", score: 25
-            }], potions: [1, 2, 3], cards: [1, 2, 3, null, 5, 6, null, 8],
+            }], potions: [1, 2, 3],
+            cards: [
+                {id: 1, isOpen: false, img: 0},
+                {id: 2, isOpen: false, img: 0},
+                {id: 3, isOpen: false, img: 0},
+                {id: 4, isOpen: false, img: 0},
+                {id: 5, isOpen: false, img: 0},
+                {id: 6, isOpen: false, img: 0},
+                {id: 7, isOpen: false, img: 0},
+                {id: 8, isOpen: false, img: 0},
+                {id: 9, isOpen: false, img: 0},
+                {id: 10, isOpen: false, img: 0},
+                {id: 11, isOpen: false, img: 0},
+                {id: 12, isOpen: false, img: 0},
+                {id: 13, isOpen: false, img: 0},
+                {id: 14, isOpen: false, img: 0},
+                {id: 15, isOpen: false, img: 0},
+                {id: 16, isOpen: false, img: 1}
+            ]
         }
         const message_4 = {
             state: States.END, players: [{id: 1, name: "Player1", score: 100, winner: true}, {
@@ -38,7 +55,7 @@ function App() {
             }],
         }
 
-        const message = message_0
+        const message = message_2
 
         setUserId(1)
         setRoomId(123456)
@@ -48,6 +65,73 @@ function App() {
 
         }
         setData(message)
+        setTimeout(() => {
+            setData({
+                ...message, cards: [
+                    {id: 1, isOpen: false, img: 0},
+                    {id: 2, isOpen: false, img: 0},
+                    {id: 3, isOpen: false, img: 0},
+                    {id: 4, isOpen: true, img: 6},
+                    {id: 5, isOpen: false, img: 0},
+                    {id: 6, isOpen: false, img: 0},
+                    {id: 7, isOpen: false, img: 0},
+                    {id: 8, isOpen: false, img: 0},
+                    {id: 9, isOpen: false, img: 0},
+                    {id: 10, isOpen: true, img: 10},
+                    {id: 11, isOpen: false, img: 0},
+                    {id: 12, isOpen: false, img: 0},
+                    {id: 13, isOpen: false, img: 0},
+                    {id: 14, isOpen: false, img: 0},
+                    {id: 15, isOpen: false, img: 0},
+                    {id: 16, isOpen: false, img: 1}
+                ]
+            })
+        }, 1000)
+        setTimeout(() => {
+            setData({
+                ...message, cards: [
+                    {id: 1, isOpen: false, img: 0},
+                    {id: 2, isOpen: false, img: 0},
+                    {id: 3, isOpen: false, img: 0},
+                    {id: 4, isOpen: true, img: null},
+                    {id: 5, isOpen: false, img: 0},
+                    {id: 6, isOpen: false, img: 0},
+                    {id: 7, isOpen: false, img: 0},
+                    {id: 8, isOpen: false, img: 0},
+                    {id: 9, isOpen: false, img: 0},
+                    {id: 10, isOpen: true, img: null},
+                    {id: 11, isOpen: false, img: 0},
+                    {id: 12, isOpen: false, img: 0},
+                    {id: 13, isOpen: false, img: 0},
+                    {id: 14, isOpen: false, img: 0},
+                    {id: 15, isOpen: false, img: 0},
+                    {id: 16, isOpen: false, img: 1}
+                ]
+            })
+        }, 2000)
+        setTimeout(() => {
+            setData({
+                ...message, cards: [
+                    {id: 1, isOpen: false, img: 0},
+                    {id: 2, isOpen: false, img: 0},
+                    {id: 3, isOpen: false, img: 0},
+                    {id: 4, isOpen: true, img: null},
+                    {id: 5, isOpen: false, img: 0},
+                    {id: 6, isOpen: false, img: 0},
+                    {id: 7, isOpen: true, img: 11},
+                    {id: 8, isOpen: false, img: 0},
+                    {id: 9, isOpen: false, img: 0},
+                    {id: 10, isOpen: true, img: null},
+                    {id: 11, isOpen: false, img: 0},
+                    {id: 12, isOpen: false, img: 0},
+                    {id: 13, isOpen: true, img: 5},
+                    {id: 14, isOpen: false, img: 0},
+                    {id: 15, isOpen: false, img: 0},
+                    {id: 16, isOpen: false, img: 1}
+                ]
+            })
+        }, 3000)
+
     }, [])
 
     const renderScreen = () => {
@@ -59,10 +143,10 @@ function App() {
                 return <RoomScreen userId={userId} roomId={roomId} data={data}/>
 
             case States.GAME:
-                return <GameScreenTemp userId={userId} roomId={roomId} data={data}/>
+                return <GameScreen userId={userId} roomId={roomId} data={data}/>
 
             case States.MOVE:
-                return <MoveScreen userId={userId} roomId={roomId} data={data}/>
+                return <GameScreen userId={userId} roomId={roomId} data={data}/>
 
             case States.END:
                 return <EndScreen userId={userId} roomId={roomId} data={data}/>
@@ -84,106 +168,3 @@ function App() {
 }
 
 export default App
-
-const MenuScreen = ({userId, data}) => {
-
-    return (<>
-        <h1>Главное меню</h1>
-        <p>Ваш ID: {userId}</p>
-        {data && <p>Ваш счет: {data.score}</p>}
-        <button>Найти игру</button>
-    </>)
-}
-
-const RoomScreen = ({userId, roomId, data}) => {
-    return (<>
-        <h1>Комната #{roomId}</h1>
-        <h2>Игроки:</h2>
-        <ul>
-            {data?.players?.map(player => (<li key={player.id}>
-                {player.name} {player.ready ? " Готов " : " Не готов "}
-                {player.id === userId && " (Вы)"}
-            </li>))}
-        </ul>
-        <button>Готов</button>
-    </>)
-}
-
-const GameScreenTemp = ({userId, roomId, data}) => {
-    return (<>
-        <h1>Игра идет!</h1>
-        <div>
-            <h2>Игроки:</h2>
-            <ul>
-                {data?.players?.map(player => (<li key={player.id}>
-                    {player.name}: {player.score} очков
-                    {player.id === userId && " (Вы)"}
-                </li>))}
-            </ul>
-        </div>
-
-        <div>
-            <h2>Зелья:</h2>
-            <div>
-                {data?.potions?.map((potion, index) => (<div key={index}>Зелье #{potion}</div>))}
-            </div>
-
-            <h2>Карты:</h2>
-            <div>
-                {data?.cards?.map((card, index) => (<div key={index}>
-                    {card ? `Карта ${card}` : "Пусто"}
-                </div>))}
-            </div>
-        </div>
-    </>)
-}
-
-const MoveScreen = ({userId, roomId, data}) => {
-    return (<div>
-        <h1>Ваш ход!</h1>
-        <div>
-            <h2>Игроки:</h2>
-            <ul>
-                {data?.players?.map(player => (<li key={player.id}>
-                    {player.name}: {player.score} очков
-                    {player.id === userId && " (Вы)"}
-                </li>))}
-            </ul>
-        </div>
-
-        <div>
-            <h2>Зелья:</h2>
-            <div>
-                {data?.potions?.map((potion, index) => (<div key={index}>Зелье #{potion}</div>))}
-            </div>
-
-            <h2>Карты:</h2>
-            <div>
-                {data?.cards?.map((card, index) => (<div key={index}>
-                    {card ? `Карта ${card}` : "Пусто"}
-                </div>))}
-            </div>
-        </div>
-
-        <div>
-            <button>Использовать зелье</button>
-            <button>Взять карту</button>
-            <button>Закончить ход</button>
-        </div>
-    </div>)
-}
-
-const EndScreen = ({userId, roomId, data}) => {
-    return (<>
-        <h1>Игра завершена!</h1>
-        <h2>Результаты:</h2>
-        <ul>
-            {data?.players?.map(player => (<li key={player.id}>
-                {player.name}: {player.score} очков
-                {player.winner && " 🏆"}
-                {player.id === userId && " (Вы)"}
-            </li>))}
-        </ul>
-        <button>В главное меню</button>
-    </>)
-}
