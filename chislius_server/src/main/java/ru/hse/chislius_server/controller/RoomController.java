@@ -1,7 +1,6 @@
 package ru.hse.chislius_server.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -10,41 +9,59 @@ import org.springframework.web.bind.annotation.RestController;
 import ru.hse.chislius_server.dto.room.CreatePrivateRoomRequest;
 import ru.hse.chislius_server.dto.room.RoomCodeResponse;
 import ru.hse.chislius_server.dto.room.RoomResponse;
+import ru.hse.chislius_server.mapper.RoomMapper;
+import ru.hse.chislius_server.model.User;
+import ru.hse.chislius_server.model.room.Room;
 import ru.hse.chislius_server.service.RoomService;
+import ru.hse.chislius_server.service.UserService;
 
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/rooms")
 public class RoomController {
+    private final UserService userService;
     private final RoomService roomService;
-
-    @GetMapping("/{code}")
-    public RoomResponse get(@PathVariable String code) {
-        return roomService.getByCode(code);
-    }
+    private final RoomMapper roomMapper;
 
     @PostMapping
-    public RoomCodeResponse createPrivate(CreatePrivateRoomRequest request) {
-        return roomService.createPrivate(request);
+    public RoomCodeResponse createPrivateRoom(CreatePrivateRoomRequest request) {
+        User user = userService.getCurrentUser();
+        roomService.validateUserNotInRoom(user);
+        Room room = roomService.createPrivateRoom(user, request.capacity());
+        roomService.broadcastRoom(room);
+        return new RoomCodeResponse(room.getCode());
     }
 
     @PostMapping("/{code}/join")
-    public RoomCodeResponse joinPrivate(@PathVariable String code) {
-        return roomService.joinPrivate(code);
+    public RoomCodeResponse joinPrivateRoom(@PathVariable String code) {
+        User user = userService.getCurrentUser();
+        roomService.validateUserNotInRoom(user);
+        Room room = roomService.joinPrivateRoom(user, code);
+        roomService.broadcastRoom(room);
+        return new RoomCodeResponse(room.getCode());
     }
 
-    @PostMapping("/join")
-    public RoomCodeResponse joinPublic() {
-        return roomService.joinPublic();
+    @PostMapping("/public/join")
+    public RoomCodeResponse joinPublicRoom() {
+        User user = userService.getCurrentUser();
+        roomService.validateUserNotInRoom(user);
+        Room room = roomService.joinPublicRoom(user);
+        roomService.broadcastRoom(room);
+        return new RoomCodeResponse(room.getCode());
     }
 
-    @DeleteMapping("/{code}")
-    public void delete(@PathVariable String code) {
-        roomService.delete(code);
+    @GetMapping("/current")
+    public RoomResponse getCurrentRoom() {
+        User user = userService.getCurrentUser();
+        Room room = roomService.getCurrentRoom(user);
+        return roomMapper.toRoomResponse(room);
     }
 
-    @PostMapping("/ping")
-    public void ping() {
-        roomService.ping();
+    @PostMapping("/current/ready")
+    public void leaveCurrentRoom() {
+        User user = userService.getCurrentUser();
+        Room room = roomService.getCurrentRoom(user);
+        roomService.leaveRoom(user, room);
+        roomService.broadcastRoom(room);
     }
 }

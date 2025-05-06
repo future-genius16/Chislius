@@ -6,6 +6,7 @@ import ru.hse.chislius_server.dto.user.UserLoginRequest;
 import ru.hse.chislius_server.dto.user.UserRegisterRequest;
 import ru.hse.chislius_server.dto.user.UserResponse;
 import ru.hse.chislius_server.dto.user.UserTokenResponse;
+import ru.hse.chislius_server.model.User;
 import ru.hse.chislius_server.service.UserService;
 
 @RequiredArgsConstructor
@@ -15,17 +16,20 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping("/register")
-    public UserTokenResponse register(UserRegisterRequest request) {
-        return userService.register(request);
+    public UserTokenResponse registerUser(UserRegisterRequest request) {
+        User user = userService.registerUser(request.getUsername(), request.getPassword());
+        return new UserTokenResponse(user.getToken());
     }
 
     @PostMapping("/login")
-    public UserTokenResponse login(UserLoginRequest request) {
-        return userService.login(request);
+    public UserTokenResponse loginUser(UserLoginRequest request) {
+        User user = userService.loginUser(request.getUsername(), request.getPassword());
+        return new UserTokenResponse(user.getToken());
     }
 
     @GetMapping("/{username}")
-    public UserResponse get(@PathVariable String username) {
-        return userService.getByUsername(username);
+    public UserResponse getUserByUsername(@PathVariable String username) {
+        User user = userService.getUserByUsername(username);
+        return new UserResponse(user);
     }
 }

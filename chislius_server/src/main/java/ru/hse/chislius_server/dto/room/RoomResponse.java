@@ -1,15 +1,9 @@
 package ru.hse.chislius_server.dto.room;
 
-import lombok.Data;
-import ru.hse.chislius_server.model.room.Room;
+import ru.hse.chislius_server.model.room.RoomState;
+import ru.hse.chislius_server.model.room.RoomType;
 
-@Data
-public class RoomResponse {
-    private final String name;
-    private final String roomId;
+import java.util.List;
 
-    public RoomResponse(Room room) {
-        this.name = "";
-        this.roomId = room.getCode();
-    }
+public record RoomResponse(String code, RoomType type, int capacity, RoomState state, List<String> usernames) {
 }

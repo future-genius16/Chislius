@@ -23,4 +23,6 @@ config:
   room:
     capacity:
       public: 3
-      private: 6
+      private:
+        min: 2
+        max: 6
