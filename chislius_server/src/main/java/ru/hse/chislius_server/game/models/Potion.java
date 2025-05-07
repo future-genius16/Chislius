@@ -1,4 +1,4 @@
-package ru.hse.chislius_server.game;
+package ru.hse.chislius_server.game.models;
 
 import lombok.Getter;
 import lombok.Setter;

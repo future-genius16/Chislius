@@ -1,4 +1,4 @@
-package ru.hse.chislius_server.game;
+package ru.hse.chislius_server.game.models;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -6,7 +6,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class Card {
-    final int value;
+    private final int value;
     private final Color color;
     private boolean open;
 

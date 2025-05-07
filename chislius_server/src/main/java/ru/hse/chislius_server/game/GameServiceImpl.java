@@ -1,0 +1,242 @@
+package ru.hse.chislius_server.game;
+
+import ru.hse.chislius_server.game.models.Card;
+import ru.hse.chislius_server.game.models.Color;
+import ru.hse.chislius_server.game.models.Potion;
+
+import java.util.Collections;
+import java.util.LinkedList;
+
+public class GameServiceImpl implements GameService {
+    private static final int BOARD_SIZE = 4;
+    private static final int POTIONS_SIZE = 3;
+
+    public Game createGame(GameMode gameMode) {
+        Game game = new Game(BOARD_SIZE, gameMode, generateCardsPool(), generatePotionsPool());
+        for (int i = 0; i < game.size * game.size; i++) {
+            game.cards.add(game.cardsPool.pop());
+        }
+        for (int i = 0; i < POTIONS_SIZE; i++) {
+            game.potions.add(game.potionsPool.pop());
+        }
+        return game;
+    }
+
+    public boolean openCard(Game game, int x, int y) {
+        if (game.openCards.size() < 3) {
+            Card card = game.cards.get(x * BOARD_SIZE + y);
+            if (card != null && !card.isOpen()) {
+                card.setOpen(true);
+                game.openCards.add(card);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public int doMove(Game game) {
+        int sum = 0;
+        Color color = null;
+        for (Card card : game.openCards) {
+            sum += card.getValue();
+            if (color == null) {
+                color = card.getColor();
+            } else {
+                color = color.combine(card.getColor());
+            }
+        }
+
+        for (Potion potion : game.potions) {
+            if (game.gameMode.equals(GameMode.EASY) || potion.getQuantity() == game.openCards.size()) {
+                if (!game.gameMode.equals(GameMode.HARD) || potion.getColor().equals(color)) {
+                    if (potion.getValue() == sum) {
+                        dropOpenCards(game);
+                        dropPotion(game, potion);
+                        return potion.getValue();
+                    }
+                }
+            }
+        }
+        flipOpenCards(game);
+        return 0;
+    }
+
+    public void skipMove(Game game) {
+        flipOpenCards(game);
+    }
+
+    public boolean canMove(Game game) {
+        for (Potion potion : game.potions) {
+            for (int i1 = 0; i1 < BOARD_SIZE * BOARD_SIZE; i1++) {
+                Card card1 = game.cards.get(i1);
+                if (card1 != null && card1.getValue() < potion.getValue() && checkColorNotUnknown(game, card1.getColor().combine(potion.getColor()))) {
+                    for (int i2 = i1 + 1; i2 < BOARD_SIZE * BOARD_SIZE; i2++) {
+                        Card card2 = game.cards.get(i2);
+                        if (card2 != null) {
+                            if (game.gameMode.equals(GameMode.EASY) || potion.getQuantity() == 2) {
+                                if (card1.getValue() + card2.getValue() == potion.getValue() && (!game.gameMode.equals(GameMode.HARD) || card1.getColor().combine(card2.getColor()).equals(potion.getColor()))) {
+                                    return true;
+                                }
+                            }
+                            if (game.gameMode.equals(GameMode.EASY) || potion.getQuantity() == 3) {
+                                for (int i3 = i2 + 1; i3 < BOARD_SIZE * BOARD_SIZE; i3++) {
+                                    Card card3 = game.cards.get(i3);
+                                    if (card3 != null && card1.getValue() + card2.getValue() + card3.getValue() == potion.getValue() && checkColorEquals(game, card1.getColor().combine(card2.getColor()).combine(card3.getColor()), potion.getColor())) {
+                                        return true;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    public GamePresentation getGamePresentation(Game game) {
+        return new GamePresentation(game.gameMode, game.potions, game.cards);
+    }
+
+
+    private boolean checkColorEquals(Game game, Color left, Color right) {
+        return !game.gameMode.equals(GameMode.HARD) || left.equals(right);
+    }
+
+    private boolean checkColorNotUnknown(Game game, Color color) {
+        return !game.gameMode.equals(GameMode.HARD) || !color.equals(Color.UNKNOWN);
+    }
+
+
+    private void flipOpenCards(Game game) {
+        for (Card card : game.openCards) {
+            card.setOpen(false);
+        }
+        game.openCards.clear();
+    }
+
+    private void dropOpenCards(Game game) {
+        for (int i = 0; i < BOARD_SIZE * BOARD_SIZE; i++) {
+            Card card = game.cards.get(i);
+            if (card != null && card.isOpen()) {
+                dropCard(game, i);
+            }
+        }
+        game.openCards.clear();
+    }
+
+    private void dropPotion(Game game, Potion potion) {
+        game.potions.remove(potion);
+        if (!game.potionsPool.isEmpty()) {
+            game.potions.add(game.potionsPool.pop());
+        }
+    }
+
+    private void dropCard(Game game, int i) {
+        game.cards.remove(i);
+        if (!game.cardsPool.isEmpty()) {
+            game.cards.add(i, game.cardsPool.pop());
+        } else {
+            game.cards.add(i, null);
+        }
+    }
+
+    private static LinkedList<Card> generateCardsPool() {
+        LinkedList<Card> cardsPool = new LinkedList<>();
+        cardsPool.add(new Card(1, Color.BLUE));
+        cardsPool.add(new Card(1, Color.BLUE));
+        cardsPool.add(new Card(2, Color.BLUE));
+        cardsPool.add(new Card(2, Color.BLUE));
+        cardsPool.add(new Card(2, Color.BLUE));
+        cardsPool.add(new Card(2, Color.BLUE));
+        cardsPool.add(new Card(3, Color.BLUE));
+        cardsPool.add(new Card(3, Color.BLUE));
+        cardsPool.add(new Card(3, Color.BLUE));
+        cardsPool.add(new Card(4, Color.BLUE));
+        cardsPool.add(new Card(4, Color.BLUE));
+        cardsPool.add(new Card(5, Color.BLUE));
+        cardsPool.add(new Card(5, Color.BLUE));
+        cardsPool.add(new Card(6, Color.BLUE));
+        cardsPool.add(new Card(1, Color.YELLOW));
+        cardsPool.add(new Card(1, Color.YELLOW));
+        cardsPool.add(new Card(2, Color.YELLOW));
+        cardsPool.add(new Card(2, Color.YELLOW));
+        cardsPool.add(new Card(2, Color.YELLOW));
+        cardsPool.add(new Card(2, Color.YELLOW));
+        cardsPool.add(new Card(3, Color.YELLOW));
+        cardsPool.add(new Card(3, Color.YELLOW));
+        cardsPool.add(new Card(3, Color.YELLOW));
+        cardsPool.add(new Card(4, Color.YELLOW));
+        cardsPool.add(new Card(4, Color.YELLOW));
+        cardsPool.add(new Card(5, Color.YELLOW));
+        cardsPool.add(new Card(5, Color.YELLOW));
+        cardsPool.add(new Card(6, Color.YELLOW));
+        cardsPool.add(new Card(1, Color.RED));
+        cardsPool.add(new Card(1, Color.RED));
+        cardsPool.add(new Card(2, Color.RED));
+        cardsPool.add(new Card(2, Color.RED));
+        cardsPool.add(new Card(2, Color.RED));
+        cardsPool.add(new Card(2, Color.RED));
+        cardsPool.add(new Card(3, Color.RED));
+        cardsPool.add(new Card(3, Color.RED));
+        cardsPool.add(new Card(3, Color.RED));
+        cardsPool.add(new Card(4, Color.RED));
+        cardsPool.add(new Card(4, Color.RED));
+        cardsPool.add(new Card(5, Color.RED));
+        cardsPool.add(new Card(6, Color.RED));
+        cardsPool.add(new Card(6, Color.RED));
+        Collections.shuffle(cardsPool);
+        return cardsPool;
+    }
+
+    private static LinkedList<Potion> generatePotionsPool() {
+        LinkedList<Potion> potionsPool = new LinkedList<>();
+        potionsPool.add(new Potion(4, Color.GREEN, 2));
+        potionsPool.add(new Potion(6, Color.GREEN, 2));
+        potionsPool.add(new Potion(7, Color.GREEN, 2));
+        potionsPool.add(new Potion(8, Color.GREEN, 2));
+        potionsPool.add(new Potion(9, Color.GREEN, 2));
+        potionsPool.add(new Potion(10, Color.GREEN, 3));
+        potionsPool.add(new Potion(3, Color.ORANGE, 2));
+        potionsPool.add(new Potion(5, Color.ORANGE, 2));
+        potionsPool.add(new Potion(6, Color.ORANGE, 2));
+        potionsPool.add(new Potion(8, Color.ORANGE, 3));
+        potionsPool.add(new Potion(9, Color.ORANGE, 3));
+        potionsPool.add(new Potion(10, Color.ORANGE, 3));
+        potionsPool.add(new Potion(4, Color.VIOLET, 2));
+        potionsPool.add(new Potion(5, Color.VIOLET, 2));
+        potionsPool.add(new Potion(7, Color.VIOLET, 3));
+        potionsPool.add(new Potion(8, Color.VIOLET, 2));
+        potionsPool.add(new Potion(9, Color.VIOLET, 3));
+        potionsPool.add(new Potion(10, Color.VIOLET, 2));
+        Collections.shuffle(potionsPool);
+        return potionsPool;
+    }
+
+    public static void main(String[] args) {
+        GameService service = new GameServiceImpl();
+        Game game = service.createGame(GameMode.MEDIUM);
+        service.doMove(game);
+        System.out.println(game);
+
+        service.openCard(game, 3, 3);
+        System.out.println(game);
+
+        service.openCard(game, 2, 1);
+        System.out.println(game);
+
+        System.out.println(service.doMove(game));
+        System.out.println(game);
+
+        service.openCard(game, 1, 0);
+        System.out.println(game);
+
+        service.openCard(game, 0, 2);
+        System.out.println(game);
+
+        System.out.println(service.doMove(game));
+        System.out.println(game);
+
+        System.out.println(service.getGamePresentation(game));
+    }
+}
