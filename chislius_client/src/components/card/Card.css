@@ -37,16 +37,16 @@
     border-radius: 3px;
 }
 
-.card__front {
-    background-color: #113a66;
-}
-
 .card__back {
     display: block;
     object-fit: contain;
     object-position: center center;
-    background-color: #6a8fd3;
     transform: rotateY(180deg);
+}
+
+.card__image {
+    width: inherit;
+    height: inherit;
 }
 
 .card_invisible {
