@@ -22,9 +22,9 @@ public class GameServiceImpl implements GameService {
         return game;
     }
 
-    public boolean openCard(Game game, int x, int y) {
+    public boolean openCard(Game game, int y, int x) {
         if (game.openCards.size() < 3) {
-            Card card = game.cards.get(x * BOARD_SIZE + y);
+            Card card = game.cards.get(y * game.size + x);
             if (card != null && !card.isOpen()) {
                 card.setOpen(true);
                 game.openCards.add(card);
@@ -67,10 +67,10 @@ public class GameServiceImpl implements GameService {
 
     public boolean canMove(Game game) {
         for (Potion potion : game.potions) {
-            for (int i1 = 0; i1 < BOARD_SIZE * BOARD_SIZE; i1++) {
+            for (int i1 = 0; i1 < game.cards.size(); i1++) {
                 Card card1 = game.cards.get(i1);
                 if (card1 != null && card1.getValue() < potion.getValue() && checkColorNotUnknown(game, card1.getColor().combine(potion.getColor()))) {
-                    for (int i2 = i1 + 1; i2 < BOARD_SIZE * BOARD_SIZE; i2++) {
+                    for (int i2 = i1 + 1; i2 < game.cards.size(); i2++) {
                         Card card2 = game.cards.get(i2);
                         if (card2 != null) {
                             if (game.gameMode.equals(GameMode.EASY) || potion.getQuantity() == 2) {
@@ -79,7 +79,7 @@ public class GameServiceImpl implements GameService {
                                 }
                             }
                             if (game.gameMode.equals(GameMode.EASY) || potion.getQuantity() == 3) {
-                                for (int i3 = i2 + 1; i3 < BOARD_SIZE * BOARD_SIZE; i3++) {
+                                for (int i3 = i2 + 1; i3 < game.cards.size(); i3++) {
                                     Card card3 = game.cards.get(i3);
                                     if (card3 != null && card1.getValue() + card2.getValue() + card3.getValue() == potion.getValue() && checkColorEquals(game, card1.getColor().combine(card2.getColor()).combine(card3.getColor()), potion.getColor())) {
                                         return true;
@@ -116,7 +116,7 @@ public class GameServiceImpl implements GameService {
     }
 
     private void dropOpenCards(Game game) {
-        for (int i = 0; i < BOARD_SIZE * BOARD_SIZE; i++) {
+        for (int i = 0; i < game.cards.size(); i++) {
             Card card = game.cards.get(i);
             if (card != null && card.isOpen()) {
                 dropCard(game, i);
