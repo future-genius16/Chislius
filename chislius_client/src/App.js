@@ -28,24 +28,7 @@ function App() {
             state: States.GAME, players: [{id: 1, name: "Player1", score: 100}, {id: 2, name: "Player2", score: 50}, {
                 id: 12, name: "Player3", score: 25
             }], potions: [1, 2, 3],
-            cards: [
-                {id: 1, isOpen: false, img: 0},
-                {id: 2, isOpen: false, img: 0},
-                {id: 3, isOpen: false, img: 0},
-                {id: 4, isOpen: false, img: 0},
-                {id: 5, isOpen: false, img: 0},
-                {id: 6, isOpen: false, img: 0},
-                {id: 7, isOpen: false, img: 0},
-                {id: 8, isOpen: false, img: 0},
-                {id: 9, isOpen: false, img: 0},
-                {id: 10, isOpen: false, img: 0},
-                {id: 11, isOpen: false, img: 0},
-                {id: 12, isOpen: false, img: 0},
-                {id: 13, isOpen: false, img: 0},
-                {id: 14, isOpen: false, img: 0},
-                {id: 15, isOpen: false, img: 0},
-                {id: 16, isOpen: false, img: 1}
-            ]
+            cards: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
         }
         const message_4 = {
             state: States.END, players: [{id: 1, name: "Player1", score: 100, winner: true}, {
@@ -67,70 +50,24 @@ function App() {
         setData(message)
         setTimeout(() => {
             setData({
-                ...message, cards: [
-                    {id: 1, isOpen: false, img: 0},
-                    {id: 2, isOpen: false, img: 0},
-                    {id: 3, isOpen: false, img: 0},
-                    {id: 4, isOpen: true, img: 6},
-                    {id: 5, isOpen: false, img: 0},
-                    {id: 6, isOpen: false, img: 0},
-                    {id: 7, isOpen: false, img: 0},
-                    {id: 8, isOpen: false, img: 0},
-                    {id: 9, isOpen: false, img: 0},
-                    {id: 10, isOpen: true, img: 10},
-                    {id: 11, isOpen: false, img: 0},
-                    {id: 12, isOpen: false, img: 0},
-                    {id: 13, isOpen: false, img: 0},
-                    {id: 14, isOpen: false, img: 0},
-                    {id: 15, isOpen: false, img: 0},
-                    {id: 16, isOpen: false, img: 1}
-                ]
+                ...message, cards: [0,0,0,0,0,5,6,0,0,0,0,0,0,0,0,0]
             })
         }, 1000)
         setTimeout(() => {
             setData({
-                ...message, cards: [
-                    {id: 1, isOpen: false, img: 0},
-                    {id: 2, isOpen: false, img: 0},
-                    {id: 3, isOpen: false, img: 0},
-                    {id: 4, isOpen: true, img: null},
-                    {id: 5, isOpen: false, img: 0},
-                    {id: 6, isOpen: false, img: 0},
-                    {id: 7, isOpen: false, img: 0},
-                    {id: 8, isOpen: false, img: 0},
-                    {id: 9, isOpen: false, img: 0},
-                    {id: 10, isOpen: true, img: null},
-                    {id: 11, isOpen: false, img: 0},
-                    {id: 12, isOpen: false, img: 0},
-                    {id: 13, isOpen: false, img: 0},
-                    {id: 14, isOpen: false, img: 0},
-                    {id: 15, isOpen: false, img: 0},
-                    {id: 16, isOpen: false, img: 1}
-                ]
+                ...message, cards: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
             })
         }, 2000)
         setTimeout(() => {
             setData({
-                ...message, cards: [
-                    {id: 1, isOpen: false, img: 0},
-                    {id: 2, isOpen: false, img: 0},
-                    {id: 3, isOpen: false, img: 0},
-                    {id: 4, isOpen: true, img: null},
-                    {id: 5, isOpen: false, img: 0},
-                    {id: 6, isOpen: false, img: 0},
-                    {id: 7, isOpen: true, img: 11},
-                    {id: 8, isOpen: false, img: 0},
-                    {id: 9, isOpen: false, img: 0},
-                    {id: 10, isOpen: true, img: null},
-                    {id: 11, isOpen: false, img: 0},
-                    {id: 12, isOpen: false, img: 0},
-                    {id: 13, isOpen: true, img: 5},
-                    {id: 14, isOpen: false, img: 0},
-                    {id: 15, isOpen: false, img: 0},
-                    {id: 16, isOpen: false, img: 1}
-                ]
+                ...message, cards: [0,7,0,8,0,0,0,0,0,0,0,0,0,0,0,0]
             })
         }, 3000)
+        setTimeout(() => {
+            setData({
+                ...message, cards: [0,null,0,null,0,0,0,0,0,0,0,0,0,0,0,0]
+            })
+        }, 4000)
 
     }, [])
 

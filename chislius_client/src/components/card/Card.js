@@ -7,14 +7,7 @@ function Card({card, onClick}) {
         onClick(card)
     }
 
-    const getCardImage = () => {
-        if (card.img === null) {
-            return <img
-                src={`/images/cards/disabled.svg`}
-                alt={`Card ${card.img}`}
-                className="card__image"
-            />
-        }
+    const getCardFrontImage = () => {
         return <img
             src={`/images/cards/${card.img}.svg`}
             alt={`Card ${card.img}`}
@@ -22,16 +15,30 @@ function Card({card, onClick}) {
         />
     }
 
+    const getCardBackImage = () => {
+        if (!card.isDisabled) {
+            return <img
+                src={`/images/cards/back.svg`}
+                alt={`Card ${card.img}`}
+                className="card__image"
+            />
+        } else {
+            return <img
+                src={`/images/cards/disabled.svg`}
+                alt={`Card ${card.img}`}
+                className="card__image"
+            />
+        }
+    }
+
     return (<article className={`card"${!card.img == null ? ' card_invisible' : ''}`} onClick={handleClick}>
-        <div className={`card__container${card.isOpen ? ' card_open' : ''}`}>
+        <div className={`card__container${!card.isOpen ? ' card_open' : ''}`}>
             <div className="card__front">
-                <img
-                    src={`/images/cards/0.svg`}
-                    alt={`Card ${card.img}`}
-                    className="card__image"
-                />
+                {getCardFrontImage()}
             </div>
-            <div className="card__back">{getCardImage()}</div>
+            <div className="card__back">
+                {getCardBackImage()}
+            </div>
         </div>
     </article>)
 }
