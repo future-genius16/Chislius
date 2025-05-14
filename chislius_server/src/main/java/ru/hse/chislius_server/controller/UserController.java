@@ -16,13 +16,13 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping("/register")
-    public UserTokenResponse registerUser(UserRegisterRequest request) {
+    public UserTokenResponse registerUser(@RequestBody UserRegisterRequest request) {
         User user = userService.registerUser(request.getUsername(), request.getPassword());
         return new UserTokenResponse(user.getToken());
     }
 
     @PostMapping("/login")
-    public UserTokenResponse loginUser(UserLoginRequest request) {
+    public UserTokenResponse loginUser(@RequestBody UserLoginRequest request) {
         User user = userService.loginUser(request.getUsername(), request.getPassword());
         return new UserTokenResponse(user.getToken());
     }

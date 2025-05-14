@@ -41,20 +41,20 @@ public class RoomService {
 
     public void validateUserNotInRoom(User user) {
         if (user.getCurrentRoom() != null) {
-            throw new IllegalStateException("You should not be in room");
+            throw new DataValidationException("You should not be in room");
         }
     }
 
     public Room getCurrentRoom(User user) {
         if (user.getCurrentRoom() == null) {
-            throw new IllegalStateException("You should be in room");
+            throw new DataValidationException("You should be in room");
         }
         return user.getCurrentRoom();
     }
 
     public Room createPrivateRoom(User user, int capacity) {
         if (capacity < PRIVATE_ROOM_CAPACITY_MIN || capacity > PRIVATE_ROOM_CAPACITY_MAX) {
-            throw new DataValidationException("Wrong room capacity");
+            throw new DataValidationException("Wrong room capacity. Must be between " + PRIVATE_ROOM_CAPACITY_MIN + " and " + PRIVATE_ROOM_CAPACITY_MAX + ".");
         }
         Room room = new Room(RoomType.PRIVATE, capacity);
         saveRoom(room);
@@ -85,7 +85,7 @@ public class RoomService {
 
     public void leaveRoom(User user, Room room) {
         if (!room.getUsers().remove(user)) {
-            throw new IllegalStateException("Unable to leave room");
+            throw new DataValidationException("Unable to leave room.");
         }
         if (room.getUsers().isEmpty()) {
             deleteRoom(room);
@@ -133,10 +133,10 @@ public class RoomService {
 
     private void joinRoom(Room room, User user) {
         if (room.getState() != RoomState.WAIT) {
-            throw new IllegalStateException("Room is started");
+            throw new DataValidationException("Room is started");
         }
         if (room.getUsers().size() == room.getCapacity()) {
-            throw new IllegalStateException("Room is full");
+            throw new DataValidationException("Room is full");
         }
         room.getUsers().add(user);
         if (room.getUsers().size() == room.getCapacity()) {

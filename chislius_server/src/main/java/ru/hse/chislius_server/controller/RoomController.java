@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.hse.chislius_server.dto.room.CreatePrivateRoomRequest;
@@ -24,7 +25,7 @@ public class RoomController {
     private final RoomMapper roomMapper;
 
     @PostMapping
-    public RoomCodeResponse createPrivateRoom(CreatePrivateRoomRequest request) {
+    public RoomCodeResponse createPrivateRoom(@RequestBody CreatePrivateRoomRequest request) {
         User user = userService.getCurrentUser();
         roomService.validateUserNotInRoom(user);
         Room room = roomService.createPrivateRoom(user, request.capacity());
