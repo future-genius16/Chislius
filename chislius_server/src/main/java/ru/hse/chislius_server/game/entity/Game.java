@@ -1,9 +1,7 @@
-package ru.hse.chislius_server.game;
+package ru.hse.chislius_server.game.entity;
 
 import lombok.RequiredArgsConstructor;
-import ru.hse.chislius_server.game.models.Card;
-import ru.hse.chislius_server.game.models.Color;
-import ru.hse.chislius_server.game.models.Potion;
+import ru.hse.chislius_server.game.models.GameMode;
 
 import java.util.ArrayList;
 import java.util.HashSet;

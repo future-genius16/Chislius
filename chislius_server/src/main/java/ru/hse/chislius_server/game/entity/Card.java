@@ -1,7 +1,8 @@
-package ru.hse.chislius_server.game.models;
+package ru.hse.chislius_server.game.entity;
 
 import lombok.Getter;
 import lombok.Setter;
+import ru.hse.chislius_server.game.models.Color;
 
 @Getter
 @Setter

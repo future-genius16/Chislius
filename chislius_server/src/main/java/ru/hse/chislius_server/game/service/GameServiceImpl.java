@@ -1,17 +1,28 @@
-package ru.hse.chislius_server.game;
+package ru.hse.chislius_server.game.service;
 
-import ru.hse.chislius_server.game.models.Card;
+import lombok.RequiredArgsConstructor;
+import ru.hse.chislius_server.game.repository.GameRepository;
+import ru.hse.chislius_server.game.entity.Card;
+import ru.hse.chislius_server.game.entity.Game;
 import ru.hse.chislius_server.game.models.Color;
-import ru.hse.chislius_server.game.models.Potion;
+import ru.hse.chislius_server.game.entity.Potion;
+import ru.hse.chislius_server.game.models.GameMode;
+import ru.hse.chislius_server.game.models.GamePresentation;
 
 import java.util.Collections;
 import java.util.LinkedList;
 
+@RequiredArgsConstructor
 public class GameServiceImpl implements GameService {
+    private final GameRepository gameRepository;
+
     private static final int BOARD_SIZE = 4;
     private static final int POTIONS_SIZE = 3;
 
-    public Game createGame(GameMode gameMode) {
+    public Game createGame(String key, GameMode gameMode) {
+        if (gameRepository.get(key) != null) {
+            return null;
+        }
         Game game = new Game(BOARD_SIZE, gameMode, generateCardsPool(), generatePotionsPool());
         for (int i = 0; i < game.size * game.size; i++) {
             game.cards.add(game.cardsPool.pop());
@@ -19,7 +30,12 @@ public class GameServiceImpl implements GameService {
         for (int i = 0; i < POTIONS_SIZE; i++) {
             game.potions.add(game.potionsPool.pop());
         }
+        gameRepository.add(key, game);
         return game;
+    }
+
+    public Game getRoom(String key) {
+        return gameRepository.get(key);
     }
 
     public boolean openCard(Game game, int y, int x) {
@@ -214,8 +230,9 @@ public class GameServiceImpl implements GameService {
     }
 
     public static void main(String[] args) {
-        GameService service = new GameServiceImpl();
-        Game game = service.createGame(GameMode.MEDIUM);
+
+        GameService service = new GameServiceImpl(new GameRepository());
+        Game game = service.createGame("Test game", GameMode.MEDIUM);
         service.doMove(game);
         System.out.println(game);
 
