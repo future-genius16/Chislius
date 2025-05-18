@@ -3,14 +3,16 @@ import MenuScreen from "./components/screen/MenuScreen"
 import RoomScreen from "./components/screen/RoomScreen"
 import EndScreen from "./components/screen/EndScreen"
 import GameScreen from "./components/screen/GameScreen"
+import AuthScreen from "./components/screen/AuthScreen";
+import {useAuth} from "./context/TokenContext";
 
 const States = {
     MENU: 0, ROOM: 1, GAME: 2, MOVE: 3, END: 4
 }
 
 function App() {
+    const {token} = useAuth();
     const [state, setState] = useState(States.MENU)
-    const [userId, setUserId] = useState(null)
     const [roomId, setRoomId] = useState(null)
     const [data, setData] = useState(null)
 
@@ -27,8 +29,7 @@ function App() {
         const message_2 = {
             state: States.GAME, players: [{id: 1, name: "Player1", score: 100}, {id: 2, name: "Player2", score: 50}, {
                 id: 12, name: "Player3", score: 25
-            }], potions: [1, 2, 3],
-            cards: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+            }], potions: [1, 2, 3], cards: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         }
         const message_4 = {
             state: States.END, players: [{id: 1, name: "Player1", score: 100, winner: true}, {
@@ -40,7 +41,6 @@ function App() {
 
         const message = message_2
 
-        setUserId(1)
         setRoomId(123456)
 
         if (message.state) {
@@ -50,57 +50,56 @@ function App() {
         setData(message)
         setTimeout(() => {
             setData({
-                ...message, cards: [0,0,0,0,0,5,6,0,0,0,0,0,0,0,0,0]
+                ...message, cards: [0, 0, 0, 0, 0, 5, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0]
             })
         }, 1000)
         setTimeout(() => {
             setData({
-                ...message, cards: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+                ...message, cards: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
             })
         }, 2000)
         setTimeout(() => {
             setData({
-                ...message, cards: [0,7,0,8,0,0,0,0,0,0,0,0,0,0,0,0]
+                ...message, cards: [0, 7, 0, 8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
             })
         }, 3000)
         setTimeout(() => {
             setData({
-                ...message, cards: [0,null,0,null,0,0,0,0,0,0,0,0,0,0,0,0]
+                ...message, cards: [0, null, 0, null, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
             })
         }, 4000)
+
 
     }, [])
 
     const renderScreen = () => {
-        switch (state) {
-            case States.MENU:
-                return <MenuScreen userId={userId} data={data}/>
+        if (!token) {
+            return <AuthScreen/>
+        } else {
+            switch (state) {
+                case States.MENU:
+                    return <MenuScreen data={data}/>
 
-            case States.ROOM:
-                return <RoomScreen userId={userId} roomId={roomId} data={data}/>
+                case States.ROOM:
+                    return <RoomScreen data={data}/>
 
-            case States.GAME:
-                return <GameScreen userId={userId} roomId={roomId} data={data}/>
+                case States.GAME:
+                    return <GameScreen data={data}/>
 
-            case States.MOVE:
-                return <GameScreen userId={userId} roomId={roomId} data={data}/>
+                case States.MOVE:
+                    return <GameScreen data={data}/>
 
-            case States.END:
-                return <EndScreen userId={userId} roomId={roomId} data={data}/>
+                case States.END:
+                    return <EndScreen data={data}/>
 
-            default:
-                return <div>Loading...</div>
+                default:
+                    return <div>Loading...</div>
+            }
         }
     }
 
     return (<>
-        <h1>Числиус</h1>
-        {userId && <div>User ID: {userId}</div>}
-        {roomId && <div>Room ID: {roomId}</div>}
-        <div>Текущее состояние: {state}</div>
-        <div>
-            {renderScreen()}
-        </div>
+        {renderScreen()}
     </>)
 }
 
