@@ -1,5 +1,6 @@
 import React, {useState} from 'react'
 import {Modal, Form, Button, Alert} from 'react-bootstrap'
+import api from "../../client/ApiClient"
 
 const RegisterModal = ({show, onHide, onSuccess}) => {
     const [formData, setFormData] = useState({
@@ -19,19 +20,13 @@ const RegisterModal = ({show, onHide, onSuccess}) => {
         setError(null)
 
         try {
-            // Валидация
             if (formData.password !== formData.confirmPassword) {
-                setError('Passwords do not match')
+                setError('Пароли не совпадают')
             }
 
-            await new Promise(resolve => setTimeout(resolve, 1000))
-
-            if (formData.username && formData.password) {
-                onSuccess(formData.username + " " + formData.password)
-                onHide()
-            } else {
-                setError('Registration failed')
-            }
+            const response = await api.register({username: formData.username, password: formData.password})
+            onSuccess(response.token)
+            onHide()
         } catch (err) {
             setError(err.message)
         } finally {

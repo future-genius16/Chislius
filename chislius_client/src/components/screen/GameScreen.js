@@ -83,7 +83,6 @@ function GameScreen({userId, roomId, data}) {
                 }
             }))
         }
-        console.log(cardsList)
     }, [cardsList, data.cards, data.potions])
 
     const handleSubmit = () => {

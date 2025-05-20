@@ -3,7 +3,7 @@ import './Board.css'
 
 function Board({cards}) {
     const handleClick = (clickedCard) => {
-       console.log(clickedCard)
+        console.log(clickedCard)
     }
 
     return (<section className={'board'}>

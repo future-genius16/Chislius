@@ -2,7 +2,6 @@ import React from 'react'
 import './Card.css'
 
 function Card({card, onClick}) {
-
     const handleClick = () => {
         onClick(card)
     }

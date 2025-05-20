@@ -1,5 +1,6 @@
 import React, {useState} from 'react'
 import {Modal, Form, Button, Alert} from 'react-bootstrap'
+import api from "../../client/ApiClient"
 
 const LoginModal = ({show, onHide, onSuccess}) => {
     const [formData, setFormData] = useState({
@@ -19,14 +20,9 @@ const LoginModal = ({show, onHide, onSuccess}) => {
         setError(null)
 
         try {
-            await new Promise(resolve => setTimeout(resolve, 1000))
-
-            if (formData.username && formData.password) {
-                onSuccess(formData.username + " " + formData.password)
-                onHide()
-            } else {
-                setError('Login failed')
-            }
+            const response = await api.login(formData)
+            onSuccess(response.token)
+            onHide()
         } catch (err) {
             setError(err.message)
         } finally {
