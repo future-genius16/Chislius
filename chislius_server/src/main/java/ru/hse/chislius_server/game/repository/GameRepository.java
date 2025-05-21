@@ -1,9 +1,11 @@
 package ru.hse.chislius_server.game.repository;
 
+import org.springframework.stereotype.Component;
 import ru.hse.chislius_server.game.entity.Game;
 
 import java.util.HashMap;
 
+@Component
 public class GameRepository {
     private final HashMap<String, Game> games = new HashMap<>();
 

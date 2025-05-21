@@ -1,6 +1,7 @@
 package ru.hse.chislius_server.game.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 import ru.hse.chislius_server.game.repository.GameRepository;
 import ru.hse.chislius_server.game.entity.Card;
 import ru.hse.chislius_server.game.entity.Game;
@@ -11,19 +12,22 @@ import ru.hse.chislius_server.game.models.GamePresentation;
 
 import java.util.Collections;
 import java.util.LinkedList;
+import java.util.List;
 
 @RequiredArgsConstructor
+@Service
 public class GameServiceImpl implements GameService {
     private final GameRepository gameRepository;
 
     private static final int BOARD_SIZE = 4;
     private static final int POTIONS_SIZE = 3;
+    private static final int MAX_OPEN_CARD = 3;
 
     public Game createGame(String key, GameMode gameMode) {
-        if (gameRepository.get(key) != null) {
+        if (key == null || key.isEmpty() || gameRepository.get(key) != null) {
             return null;
         }
-        Game game = new Game(BOARD_SIZE, gameMode, generateCardsPool(), generatePotionsPool());
+        Game game = new Game(key, BOARD_SIZE, gameMode, generateCardsPool(), generatePotionsPool());
         for (int i = 0; i < game.size * game.size; i++) {
             game.cards.add(game.cardsPool.pop());
         }
@@ -31,19 +35,21 @@ public class GameServiceImpl implements GameService {
             game.potions.add(game.potionsPool.pop());
         }
         gameRepository.add(key, game);
+        sendChangesToPlayers(game);
         return game;
     }
 
-    public Game getRoom(String key) {
+    public Game getGame(String key) {
         return gameRepository.get(key);
     }
 
     public boolean openCard(Game game, int y, int x) {
-        if (game.openCards.size() < 3) {
+        if (game.openCards.size() < MAX_OPEN_CARD) {
             Card card = game.cards.get(y * game.size + x);
             if (card != null && !card.isOpen()) {
                 card.setOpen(true);
                 game.openCards.add(card);
+                sendChangesToPlayers(game);
                 return true;
             }
         }
@@ -64,21 +70,24 @@ public class GameServiceImpl implements GameService {
 
         for (Potion potion : game.potions) {
             if (game.gameMode.equals(GameMode.EASY) || potion.getQuantity() == game.openCards.size()) {
-                if (!game.gameMode.equals(GameMode.HARD) || potion.getColor().equals(color)) {
+                if (checkColorEquals(game, potion.getColor(), color)) {
                     if (potion.getValue() == sum) {
                         dropOpenCards(game);
                         dropPotion(game, potion);
+                        sendChangesToPlayers(game);
                         return potion.getValue();
                     }
                 }
             }
         }
         flipOpenCards(game);
+        sendChangesToPlayers(game);
         return 0;
     }
 
     public void skipMove(Game game) {
         flipOpenCards(game);
+        sendChangesToPlayers(game);
     }
 
     public boolean canMove(Game game) {
@@ -90,7 +99,7 @@ public class GameServiceImpl implements GameService {
                         Card card2 = game.cards.get(i2);
                         if (card2 != null) {
                             if (game.gameMode.equals(GameMode.EASY) || potion.getQuantity() == 2) {
-                                if (card1.getValue() + card2.getValue() == potion.getValue() && (!game.gameMode.equals(GameMode.HARD) || card1.getColor().combine(card2.getColor()).equals(potion.getColor()))) {
+                                if (card1.getValue() + card2.getValue() == potion.getValue() && checkColorEquals(game, card1.getColor().combine(card2.getColor()), potion.getColor())) {
                                     return true;
                                 }
                             }
@@ -111,7 +120,12 @@ public class GameServiceImpl implements GameService {
     }
 
     public GamePresentation getGamePresentation(Game game) {
-        return new GamePresentation(game.gameMode, game.potions, game.cards);
+        return new GamePresentation(game.gameMode, List.copyOf(game.potions), List.copyOf(game.cards));
+    }
+
+    private void sendChangesToPlayers(Game game) {
+        String key = game.key;
+        System.out.println("key=" + key + ": " + getGamePresentation(game).toString());
     }
 
 
@@ -157,50 +171,35 @@ public class GameServiceImpl implements GameService {
         }
     }
 
+    private static void addMultipleCards(LinkedList<Card> cards, int value, Color color, int quantity) {
+        for (int i = 0; i < quantity; i++) {
+            cards.add(new Card(value, color));
+        }
+    }
+
     private static LinkedList<Card> generateCardsPool() {
         LinkedList<Card> cardsPool = new LinkedList<>();
-        cardsPool.add(new Card(1, Color.BLUE));
-        cardsPool.add(new Card(1, Color.BLUE));
-        cardsPool.add(new Card(2, Color.BLUE));
-        cardsPool.add(new Card(2, Color.BLUE));
-        cardsPool.add(new Card(2, Color.BLUE));
-        cardsPool.add(new Card(2, Color.BLUE));
-        cardsPool.add(new Card(3, Color.BLUE));
-        cardsPool.add(new Card(3, Color.BLUE));
-        cardsPool.add(new Card(3, Color.BLUE));
-        cardsPool.add(new Card(4, Color.BLUE));
-        cardsPool.add(new Card(4, Color.BLUE));
-        cardsPool.add(new Card(5, Color.BLUE));
-        cardsPool.add(new Card(5, Color.BLUE));
-        cardsPool.add(new Card(6, Color.BLUE));
-        cardsPool.add(new Card(1, Color.YELLOW));
-        cardsPool.add(new Card(1, Color.YELLOW));
-        cardsPool.add(new Card(2, Color.YELLOW));
-        cardsPool.add(new Card(2, Color.YELLOW));
-        cardsPool.add(new Card(2, Color.YELLOW));
-        cardsPool.add(new Card(2, Color.YELLOW));
-        cardsPool.add(new Card(3, Color.YELLOW));
-        cardsPool.add(new Card(3, Color.YELLOW));
-        cardsPool.add(new Card(3, Color.YELLOW));
-        cardsPool.add(new Card(4, Color.YELLOW));
-        cardsPool.add(new Card(4, Color.YELLOW));
-        cardsPool.add(new Card(5, Color.YELLOW));
-        cardsPool.add(new Card(5, Color.YELLOW));
-        cardsPool.add(new Card(6, Color.YELLOW));
-        cardsPool.add(new Card(1, Color.RED));
-        cardsPool.add(new Card(1, Color.RED));
-        cardsPool.add(new Card(2, Color.RED));
-        cardsPool.add(new Card(2, Color.RED));
-        cardsPool.add(new Card(2, Color.RED));
-        cardsPool.add(new Card(2, Color.RED));
-        cardsPool.add(new Card(3, Color.RED));
-        cardsPool.add(new Card(3, Color.RED));
-        cardsPool.add(new Card(3, Color.RED));
-        cardsPool.add(new Card(4, Color.RED));
-        cardsPool.add(new Card(4, Color.RED));
-        cardsPool.add(new Card(5, Color.RED));
-        cardsPool.add(new Card(6, Color.RED));
-        cardsPool.add(new Card(6, Color.RED));
+        addMultipleCards(cardsPool, 1, Color.BLUE, 2);
+        addMultipleCards(cardsPool, 2, Color.BLUE, 4);
+        addMultipleCards(cardsPool, 3, Color.BLUE, 3);
+        addMultipleCards(cardsPool, 4, Color.BLUE, 2);
+        addMultipleCards(cardsPool, 5, Color.BLUE, 2);
+        addMultipleCards(cardsPool, 6, Color.BLUE, 1);
+
+        addMultipleCards(cardsPool, 1, Color.YELLOW, 2);
+        addMultipleCards(cardsPool, 2, Color.YELLOW, 4);
+        addMultipleCards(cardsPool, 3, Color.YELLOW, 3);
+        addMultipleCards(cardsPool, 4, Color.YELLOW, 2);
+        addMultipleCards(cardsPool, 5, Color.YELLOW, 2);
+        addMultipleCards(cardsPool, 6, Color.YELLOW, 1);
+
+        addMultipleCards(cardsPool, 1, Color.RED, 2);
+        addMultipleCards(cardsPool, 2, Color.RED, 4);
+        addMultipleCards(cardsPool, 3, Color.RED, 3);
+        addMultipleCards(cardsPool, 4, Color.RED, 2);
+        addMultipleCards(cardsPool, 5, Color.RED, 1);
+        addMultipleCards(cardsPool, 6, Color.RED, 2);
+
         Collections.shuffle(cardsPool);
         return cardsPool;
     }

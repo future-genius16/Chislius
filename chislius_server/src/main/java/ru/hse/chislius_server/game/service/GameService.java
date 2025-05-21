@@ -7,7 +7,7 @@ import ru.hse.chislius_server.game.models.GamePresentation;
 public interface GameService {
     Game createGame(String key, GameMode gameMode);
 
-    Game getRoom(String key);
+    Game getGame(String key);
 
     boolean openCard(Game game, int x, int y);
 

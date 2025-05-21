@@ -1,6 +1,5 @@
 package ru.hse.chislius_server.game.models;
 
-import lombok.Data;
 import ru.hse.chislius_server.game.entity.Card;
 import ru.hse.chislius_server.game.entity.Potion;
 

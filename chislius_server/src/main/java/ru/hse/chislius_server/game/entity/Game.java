@@ -11,6 +11,7 @@ import java.util.Set;
 
 @RequiredArgsConstructor
 public class Game {
+    public final String key;
     public final int size;
     public final GameMode gameMode;
     public final Set<Card> openCards = new HashSet<>();
