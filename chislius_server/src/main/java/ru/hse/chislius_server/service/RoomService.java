@@ -9,11 +9,15 @@ import org.springframework.stereotype.Service;
 import ru.hse.chislius_server.exception.DataValidationException;
 import ru.hse.chislius_server.exception.EntityNotFoundException;
 import ru.hse.chislius_server.exception.GenerationTimeoutException;
-import ru.hse.chislius_server.model.room.Room;
+import ru.hse.chislius_server.game.entity.Game;
+import ru.hse.chislius_server.game.models.GameMode;
+import ru.hse.chislius_server.game.service.GameService;
 import ru.hse.chislius_server.model.User;
+import ru.hse.chislius_server.model.room.Room;
 import ru.hse.chislius_server.model.room.RoomState;
 import ru.hse.chislius_server.model.room.RoomType;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -24,6 +28,7 @@ import java.util.Set;
 @Service
 @Slf4j
 public class RoomService {
+    private final GameService gameService;
     private final SimpMessagingTemplate messagingTemplate;
 
     @Getter
@@ -52,11 +57,17 @@ public class RoomService {
         return user.getCurrentRoom();
     }
 
-    public Room createPrivateRoom(User user, int capacity) {
+    public Room createPrivateRoom(User user, int capacity, int gameMode) {
         if (capacity < PRIVATE_ROOM_CAPACITY_MIN || capacity > PRIVATE_ROOM_CAPACITY_MAX) {
             throw new DataValidationException("Wrong room capacity. Must be between " + PRIVATE_ROOM_CAPACITY_MIN + " and " + PRIVATE_ROOM_CAPACITY_MAX + ".");
         }
-        Room room = new Room(RoomType.PRIVATE, capacity);
+        GameMode mode = switch (gameMode) {
+            case 0 -> GameMode.EASY;
+            case 1 -> GameMode.MEDIUM;
+            case 2 -> GameMode.HARD;
+            default -> throw new DataValidationException("Wrong game mode. Must be between " + GameMode.EASY.ordinal() + " and " + GameMode.HARD.ordinal() + ".");
+        };
+        Room room = new Room(RoomType.PRIVATE, capacity, mode);
         saveRoom(room);
         joinRoom(room, user);
         return room;
@@ -73,7 +84,7 @@ public class RoomService {
 
     public Room joinPublicRoom(User user) {
         Room room = publicRooms.stream().filter((r) -> r.getType() == RoomType.PUBLIC && r.getState() == RoomState.WAIT && r.getUsers().size() < r.getCapacity()).findAny().orElseGet(() -> {
-            Room newRoom = new Room(RoomType.PUBLIC, PUBLIC_ROOM_CAPACITY);
+            Room newRoom = new Room(RoomType.PUBLIC, PUBLIC_ROOM_CAPACITY, GameMode.MEDIUM);
             saveRoom(newRoom);
             newRoom.setState(RoomState.WAIT);
             publicRooms.add(newRoom);
@@ -87,8 +98,15 @@ public class RoomService {
         if (!room.getUsers().remove(user)) {
             throw new DataValidationException("Unable to leave room.");
         }
+        user.setCurrentRoom(null);
         if (room.getUsers().isEmpty()) {
             deleteRoom(room);
+            return;
+        }
+        if (room.getCurrentPlayer() == user){
+            room.setCurrentPlayer(room.getPlayers().removeLast());
+        } else {
+            room.getPlayers().remove(user);
         }
     }
 
@@ -140,8 +158,49 @@ public class RoomService {
         }
         room.getUsers().add(user);
         if (room.getUsers().size() == room.getCapacity()) {
-            room.setState(RoomState.IN_PROGRESS);
+            startGame(room);
         }
         user.setCurrentRoom(room);
+    }
+
+    private void startGame(Room room) {
+        room.setState(RoomState.IN_PROGRESS);
+        Game game = gameService.createGame(room.getCode(), room.getMode());
+        room.setGame(game);
+        room.getPlayers().addAll(room.getUsers());
+        Collections.shuffle(room.getPlayers());
+        room.setCurrentPlayer(room.getPlayers().removeLast());
+        room.getUsers().forEach((user) -> room.getScores().put(user, 0));
+    }
+
+    public void flipCard(User user, Room room, int id) {
+        if (room.getCurrentPlayer() == user) {
+            if (!gameService.openCard(room.getGame(), (id - 1) / 4, (id - 1) % 4)){
+                throw new DataValidationException("Невозможно открыть еще одну карту");
+            }
+        } else {
+            throw new DataValidationException("Сейчас не ваш ход");
+        }
+    }
+
+    public void skipMove(User user, Room room) {
+        if (room.getCurrentPlayer() == user) {
+            gameService.skipMove(room.getGame());
+            room.getPlayers().add(0, user);
+            room.setCurrentPlayer(room.getPlayers().removeLast());
+        } else {
+            throw new DataValidationException("Сейчас не ваш ход");
+        }
+    }
+
+    public void submitMove(User user, Room room) {
+        if (room.getCurrentPlayer() == user) {
+            int d = gameService.doMove(room.getGame());
+            room.getScores().put(user, room.getScores().get(user) + d);
+            room.getPlayers().add(0, user);
+            room.setCurrentPlayer(room.getPlayers().removeLast());
+        } else {
+            throw new DataValidationException("Сейчас не ваш ход");
+        }
     }
 }

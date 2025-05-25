@@ -28,7 +28,7 @@ public class RoomController {
     public RoomCodeResponse createPrivateRoom(@RequestBody CreatePrivateRoomRequest request) {
         User user = userService.getCurrentUser();
         roomService.validateUserNotInRoom(user);
-        Room room = roomService.createPrivateRoom(user, request.capacity());
+        Room room = roomService.createPrivateRoom(user, request.capacity(), request.mode());
         roomService.broadcastRoom(room);
         return new RoomCodeResponse(room.getCode());
     }
@@ -64,5 +64,26 @@ public class RoomController {
         Room room = roomService.getCurrentRoom(user);
         roomService.leaveRoom(user, room);
         roomService.broadcastRoom(room);
+    }
+
+    @PostMapping("/flip/{id}")
+    public void flipCard(@PathVariable int id) {
+        User user = userService.getCurrentUser();
+        Room room = roomService.getCurrentRoom(user);
+        roomService.flipCard(user, room, id);
+    }
+
+    @PostMapping("/skip")
+    public void skipMove() {
+        User user = userService.getCurrentUser();
+        Room room = roomService.getCurrentRoom(user);
+        roomService.skipMove(user, room);
+    }
+
+    @PostMapping("/submit")
+    public void submitMove() {
+        User user = userService.getCurrentUser();
+        Room room = roomService.getCurrentRoom(user);
+        roomService.submitMove(user, room);
     }
 }
