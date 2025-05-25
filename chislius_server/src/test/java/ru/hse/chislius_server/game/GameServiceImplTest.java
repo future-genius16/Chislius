@@ -3,15 +3,18 @@ package ru.hse.chislius_server.game;
 import org.junit.jupiter.api.Test;
 import ru.hse.chislius_server.game.entity.Card;
 import ru.hse.chislius_server.game.entity.Game;
-import ru.hse.chislius_server.game.models.Color;
 import ru.hse.chislius_server.game.entity.Potion;
+import ru.hse.chislius_server.game.models.Color;
 import ru.hse.chislius_server.game.models.GameMode;
 import ru.hse.chislius_server.game.models.GamePresentation;
 import ru.hse.chislius_server.game.repository.GameRepository;
 import ru.hse.chislius_server.game.service.GameService;
 import ru.hse.chislius_server.game.service.GameServiceImpl;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class GameServiceImplTest {
     private final GameService gameService = new GameServiceImpl(new GameRepository());

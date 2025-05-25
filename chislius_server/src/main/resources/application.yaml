@@ -26,3 +26,5 @@ config:
       private:
         min: 2
         max: 6
+  game:
+    wrong-move-cost: -3

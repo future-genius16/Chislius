@@ -1,14 +1,15 @@
 package ru.hse.chislius_server.game.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import ru.hse.chislius_server.game.repository.GameRepository;
 import ru.hse.chislius_server.game.entity.Card;
 import ru.hse.chislius_server.game.entity.Game;
-import ru.hse.chislius_server.game.models.Color;
 import ru.hse.chislius_server.game.entity.Potion;
+import ru.hse.chislius_server.game.models.Color;
 import ru.hse.chislius_server.game.models.GameMode;
 import ru.hse.chislius_server.game.models.GamePresentation;
+import ru.hse.chislius_server.game.repository.GameRepository;
 
 import java.util.Collections;
 import java.util.LinkedList;
@@ -22,6 +23,9 @@ public class GameServiceImpl implements GameService {
     private static final int BOARD_SIZE = 4;
     private static final int POTIONS_SIZE = 3;
     private static final int MAX_OPEN_CARD = 3;
+
+    @Value("${config.game.wrong-move-cost}")
+    private int WRONG_MOVE_COST;
 
     public Game createGame(String key, GameMode gameMode) {
         if (key == null || key.isEmpty() || gameRepository.get(key) != null) {
@@ -82,7 +86,7 @@ public class GameServiceImpl implements GameService {
         }
         flipOpenCards(game);
         sendChangesToPlayers(game);
-        return 0;
+        return WRONG_MOVE_COST;
     }
 
     public void skipMove(Game game) {
@@ -226,33 +230,5 @@ public class GameServiceImpl implements GameService {
         potionsPool.add(new Potion(10, Color.VIOLET, 2));
         Collections.shuffle(potionsPool);
         return potionsPool;
-    }
-
-    public static void main(String[] args) {
-
-        GameService service = new GameServiceImpl(new GameRepository());
-        Game game = service.createGame("Test game", GameMode.MEDIUM);
-        service.doMove(game);
-        System.out.println(game);
-
-        service.openCard(game, 3, 3);
-        System.out.println(game);
-
-        service.openCard(game, 2, 1);
-        System.out.println(game);
-
-        System.out.println(service.doMove(game));
-        System.out.println(game);
-
-        service.openCard(game, 1, 0);
-        System.out.println(game);
-
-        service.openCard(game, 0, 2);
-        System.out.println(game);
-
-        System.out.println(service.doMove(game));
-        System.out.println(game);
-
-        System.out.println(service.getGamePresentation(game));
     }
 }
