@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.hse.chislius_server.config.context.UserContext;
+import ru.hse.chislius_server.dto.update.UpdateResponse;
 import ru.hse.chislius_server.exception.AuthorizationException;
 import ru.hse.chislius_server.exception.DataValidationException;
 import ru.hse.chislius_server.exception.EntityNotFoundException;
@@ -82,5 +83,18 @@ public class UserService {
 
     private User getUserByToken(String token) {
         return users.stream().filter((u) -> u.getToken().equals(token)).findAny().orElseThrow(() -> new AuthorizationException("User not found"));
+    }
+
+    public UpdateResponse getUpdateResponse() {
+        User user = getCurrentUser();
+        return new UpdateResponse(user);
+    }
+
+    public void changeUsername(String username) {
+        if (username == null || username.isEmpty()) {
+            throw new DataValidationException("Пустое имя пользователя");
+        }
+        User user = getCurrentUser();
+        user.setUsername(username);
     }
 }

@@ -2,9 +2,10 @@ package ru.hse.chislius_server.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import ru.hse.chislius_server.dto.update.UpdateResponse;
+import ru.hse.chislius_server.dto.user.UserChangeNameRequest;
 import ru.hse.chislius_server.dto.user.UserLoginRequest;
 import ru.hse.chislius_server.dto.user.UserRegisterRequest;
-import ru.hse.chislius_server.dto.user.UserResponse;
 import ru.hse.chislius_server.dto.user.UserTokenResponse;
 import ru.hse.chislius_server.model.User;
 import ru.hse.chislius_server.service.UserService;
@@ -27,9 +28,13 @@ public class UserController {
         return new UserTokenResponse(user.getToken());
     }
 
-    @GetMapping("/{username}")
-    public UserResponse getUserByUsername(@PathVariable String username) {
-        User user = userService.getUserByUsername(username);
-        return new UserResponse(user);
+    @GetMapping("/update")
+    public UpdateResponse update(){
+        return userService.getUpdateResponse();
+    }
+
+    @PostMapping("/username")
+    public void changeUsername(@RequestBody UserChangeNameRequest request) {
+        userService.changeUsername(request.getUsername());
     }
 }
