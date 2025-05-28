@@ -1,11 +1,11 @@
 import React, {useState} from 'react'
-import {Modal, Form, Button, Alert} from 'react-bootstrap'
-import api from "../../client/ApiClient"
+import {Alert, Button, Form, Modal} from 'react-bootstrap'
+import api from '../../client/ApiClient'
+import {useAuth} from '../../context/TokenContext'
 
-const LoginModal = ({show, onHide, onSuccess}) => {
-    const [formData, setFormData] = useState({
-        username: '', password: ''
-    })
+const LoginModal = ({show, onHide}) => {
+    const {login} = useAuth()
+    const [formData, setFormData] = useState({username: '', password: ''})
     const [error, setError] = useState('')
     const [isLoading, setIsLoading] = useState(false)
 
@@ -21,7 +21,7 @@ const LoginModal = ({show, onHide, onSuccess}) => {
 
         try {
             const response = await api.login(formData)
-            onSuccess(response.token)
+            login(response.token)
             onHide()
         } catch (err) {
             setError(err.message)
@@ -32,14 +32,14 @@ const LoginModal = ({show, onHide, onSuccess}) => {
 
     return (<Modal show={show} onHide={onHide}>
         <Modal.Header closeButton>
-            <Modal.Title>Login</Modal.Title>
+            <Modal.Title>Вход</Modal.Title>
         </Modal.Header>
 
         <Form onSubmit={handleSubmit}>
             <Modal.Body>
                 {error && <Alert variant="danger">{error}</Alert>}
                 <Form.Group>
-                    <Form.Label>Username</Form.Label>
+                    <Form.Label>Имя пользователя</Form.Label>
                     <Form.Control
                         type="text"
                         name="username"
@@ -48,7 +48,7 @@ const LoginModal = ({show, onHide, onSuccess}) => {
                     />
                 </Form.Group>
                 <Form.Group>
-                    <Form.Label>Password</Form.Label>
+                    <Form.Label>Пароль</Form.Label>
                     <Form.Control
                         type="password"
                         name="password"
@@ -59,9 +59,9 @@ const LoginModal = ({show, onHide, onSuccess}) => {
             </Modal.Body>
 
             <Modal.Footer>
-                <Button variant="secondary" onClick={onHide}>Cancel</Button>
+                <Button variant="secondary" onClick={onHide}>Назад</Button>
                 <Button variant="primary" type="submit" disabled={isLoading}>
-                    {isLoading ? 'Logging in...' : 'Login'}
+                    {isLoading ? 'Загрузка...' : 'Войти'}
                 </Button>
             </Modal.Footer>
         </Form>

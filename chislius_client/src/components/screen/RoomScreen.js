@@ -1,14 +1,20 @@
-function RoomScreen({userId, roomId, data}) {
+import {Container} from 'react-bootstrap'
+import React from 'react'
+import RoomNavbar from '../navbar/RoomNavbar'
+
+function RoomScreen({player, data}) {
     return (<>
-        <h1>Комната #{roomId}</h1>
-        <h2>Игроки:</h2>
-        <ul>
-            {data?.players?.map(player => (<li key={player.id}>
-                {player.name} {player.ready ? " Готов " : " Не готов "}
-                {player.id === userId && " (Вы)"}
-            </li>))}
-        </ul>
-        <button>Готов</button>
+        <RoomNavbar player={player} data={data}/>
+        <Container>
+            <h1>Комната {data.code}</h1>
+            <h2>Игроки:</h2>
+            <ul>
+                {data.players.map(otherPlayer => (<li key={otherPlayer.id}>
+                    {otherPlayer.name}
+                    {otherPlayer.id === player.id && ' (Вы)'}
+                </li>))}
+            </ul>
+        </Container>
     </>)
 }
 

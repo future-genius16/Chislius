@@ -1,8 +1,10 @@
 import React, {useState} from 'react'
-import {Modal, Form, Button, Alert} from 'react-bootstrap'
-import api from "../../client/ApiClient"
+import {Alert, Button, Form, Modal} from 'react-bootstrap'
+import api from '../../client/ApiClient'
+import {useAuth} from '../../context/TokenContext'
 
 const RegisterModal = ({show, onHide, onSuccess}) => {
+    const {login} = useAuth()
     const [formData, setFormData] = useState({
         username: '', password: '', confirmPassword: ''
     })
@@ -20,12 +22,17 @@ const RegisterModal = ({show, onHide, onSuccess}) => {
         setError(null)
 
         try {
+            if (formData.password === '') {
+                setError('Введите пароль')
+                return
+            }
             if (formData.password !== formData.confirmPassword) {
                 setError('Пароли не совпадают')
+                return
             }
 
             const response = await api.register({username: formData.username, password: formData.password})
-            onSuccess(response.token)
+            login(response.token)
             onHide()
         } catch (err) {
             setError(err.message)
@@ -36,14 +43,14 @@ const RegisterModal = ({show, onHide, onSuccess}) => {
 
     return (<Modal show={show} onHide={onHide}>
         <Modal.Header closeButton>
-            <Modal.Title>Register</Modal.Title>
+            <Modal.Title>Регистрация</Modal.Title>
         </Modal.Header>
 
         <Form onSubmit={handleSubmit}>
             <Modal.Body>
                 {error && <Alert variant="danger">{error}</Alert>}
                 <Form.Group>
-                    <Form.Label>Username</Form.Label>
+                    <Form.Label>Имя пользователя</Form.Label>
                     <Form.Control
                         type="text"
                         name="username"
@@ -52,7 +59,7 @@ const RegisterModal = ({show, onHide, onSuccess}) => {
                     />
                 </Form.Group>
                 <Form.Group>
-                    <Form.Label>Password</Form.Label>
+                    <Form.Label>Пароль</Form.Label>
                     <Form.Control
                         type="password"
                         name="password"
@@ -61,13 +68,12 @@ const RegisterModal = ({show, onHide, onSuccess}) => {
                     />
                 </Form.Group>
                 <Form.Group>
-                    <Form.Label>Confirm Password</Form.Label>
+                    <Form.Label>Повторите пароль</Form.Label>
                     <Form.Control
                         type="password"
                         name="confirmPassword"
                         value={formData.confirmPassword}
                         onChange={handleChange}
-                        required
                     />
                 </Form.Group>
             </Modal.Body>
@@ -75,7 +81,7 @@ const RegisterModal = ({show, onHide, onSuccess}) => {
             <Modal.Footer>
                 <Button variant="secondary" onClick={onHide}>Cancel</Button>
                 <Button variant="primary" type="submit" disabled={isLoading}>
-                    {isLoading ? 'Registering...' : 'Register'}
+                    {isLoading ? 'Загрузка...' : 'Зарегистрироваться'}
                 </Button>
             </Modal.Footer>
         </Form>

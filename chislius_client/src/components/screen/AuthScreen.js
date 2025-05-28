@@ -1,36 +1,34 @@
-import React, {useState} from 'react';
-import {Button} from 'react-bootstrap';
-import LoginModal from "../auth/LoginModal";
-import RegisterModal from "../auth/RegisterModal";
-import {useAuth} from "../../context/TokenContext";
+import React, {useState} from 'react'
+import {Container, Nav, Navbar} from 'react-bootstrap'
+import LoginModal from '../user/LoginModal'
+import RegisterModal from '../user/RegisterModal'
 
-const AuthorizationScreen = () => {
-    const {login} = useAuth();
-    const [showLogin, setShowLogin] = useState(false);
-    const [showRegister, setShowRegister] = useState(false);
+const AuthorizationNavbar = () => {
+    const [showLogin, setShowLogin] = useState(false)
+    const [showRegister, setShowRegister] = useState(false)
 
-    const handleAuthSuccess = (token) => {
-        login(token)
-        console.log('Authentication success, token:', token);
-    };
-
-    return (<div>
-        <h1>Chislius</h1>
-        <div>
-            <Button onClick={() => setShowLogin(true)}>Login</Button>
-            <Button onClick={() => setShowRegister(true)}>Register</Button>
-        </div>
+    return (<>
+        <Navbar className="bg-body-secondary">
+            <Container>
+                <Navbar.Brand>Числиус</Navbar.Brand>
+                <Navbar.Toggle/>
+                <Navbar.Collapse className="justify-content-end">
+                    <Nav>
+                        <Nav.Link onClick={() => setShowLogin(true)}>Вход</Nav.Link>
+                        <Nav.Link onClick={() => setShowRegister(true)}>Регистрация</Nav.Link>
+                    </Nav>
+                </Navbar.Collapse>
+            </Container>
+        </Navbar>
         <LoginModal
             show={showLogin}
             onHide={() => setShowLogin(false)}
-            onSuccess={handleAuthSuccess}
         />
         <RegisterModal
             show={showRegister}
             onHide={() => setShowRegister(false)}
-            onSuccess={handleAuthSuccess}
         />
-    </div>);
-};
+    </>)
+}
 
-export default AuthorizationScreen;
+export default AuthorizationNavbar

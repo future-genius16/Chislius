@@ -10,7 +10,7 @@ function Form({onSubmit, canSubmit, onSkip}) {
                 onClick={onSubmit}
                 disabled={!canSubmit}
             >
-                Submit
+                Сварить
             </button>
         </div>
         <div className="form__btn-container">
@@ -19,7 +19,7 @@ function Form({onSubmit, canSubmit, onSkip}) {
                 type='button'
                 onClick={onSkip}
             >
-                Skip
+                Пропустить
             </button>
         </div>
     </nav>)
