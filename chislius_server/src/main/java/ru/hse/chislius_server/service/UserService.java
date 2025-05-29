@@ -2,8 +2,10 @@ package ru.hse.chislius_server.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import ru.hse.chislius_server.config.context.UserContext;
+import ru.hse.chislius_server.dto.update.UpdateResponse;
 import ru.hse.chislius_server.exception.AuthorizationException;
 import ru.hse.chislius_server.exception.DataValidationException;
 import ru.hse.chislius_server.exception.EntityNotFoundException;
@@ -21,11 +23,12 @@ public class UserService {
     private final UserContext userContext;
 
     private final Set<User> users = new HashSet<>();
+    private final SimpMessagingTemplate simpMessagingTemplate;
 
     public User getCurrentUser() {
         String token = userContext.getUserToken();
         if (token == null) {
-            throw new AuthorizationException("User required");
+            throw new AuthorizationException("Необходимо войти для совершения этого действия");
         }
         return getUserByToken(token);
     }
@@ -40,7 +43,7 @@ public class UserService {
     public User loginUser(String username, String password) {
         User user = getUserByUsername(username);
         if (!user.getPassword().equals(password)) {
-            throw new DataValidationException("Incorrect password");
+            throw new DataValidationException("Введен неверный пароль");
         }
         issueToken(user);
         return user;
@@ -53,7 +56,7 @@ public class UserService {
     private void save(User user) {
         synchronized (users) {
             if (users.stream().anyMatch((u) -> u.getUsername().equals(user.getUsername()))) {
-                throw new DataValidationException("Username already used");
+                throw new DataValidationException("Данное имя пользователя уже занято");
             }
             issueToken(user);
             users.add(user);
@@ -81,6 +84,23 @@ public class UserService {
     }
 
     private User getUserByToken(String token) {
-        return users.stream().filter((u) -> u.getToken().equals(token)).findAny().orElseThrow(() -> new AuthorizationException("User not found"));
+        return users.stream().filter((u) -> u.getToken().equals(token)).findAny().orElseThrow(() -> new AuthorizationException("Пользователь не найден"));
+    }
+
+    public UpdateResponse getUpdateResponse() {
+        User user = getCurrentUser();
+        return new UpdateResponse(user);
+    }
+
+    public void changeUsername(String username) {
+        if (username == null || username.isEmpty()) {
+            throw new DataValidationException("Задано пустое имя пользователя");
+        }
+        User user = getCurrentUser();
+        user.setUsername(username);
+    }
+
+    public void sendUpdate(User user) {
+        simpMessagingTemplate.convertAndSendToUser(user.getToken(), "/update", new UpdateResponse(user));
     }
 }

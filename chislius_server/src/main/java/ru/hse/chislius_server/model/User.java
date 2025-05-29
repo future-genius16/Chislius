@@ -9,8 +9,12 @@ import ru.hse.chislius_server.model.room.Room;
 @ToString(of = "username")
 @EqualsAndHashCode(of = "username")
 public class User {
-    private final String username;
+    private String username;
     private String password;
     private String token;
     private Room currentRoom;
+
+    public User(String username) {
+        this.username = username;
+    }
 }

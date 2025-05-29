@@ -1,7 +1,6 @@
 package ru.hse.chislius_server.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -9,8 +8,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.hse.chislius_server.dto.room.CreatePrivateRoomRequest;
 import ru.hse.chislius_server.dto.room.RoomCodeResponse;
-import ru.hse.chislius_server.dto.room.RoomResponse;
-import ru.hse.chislius_server.mapper.RoomMapper;
 import ru.hse.chislius_server.model.User;
 import ru.hse.chislius_server.model.room.Room;
 import ru.hse.chislius_server.service.RoomService;
@@ -22,18 +19,17 @@ import ru.hse.chislius_server.service.UserService;
 public class RoomController {
     private final UserService userService;
     private final RoomService roomService;
-    private final RoomMapper roomMapper;
 
     @PostMapping
     public RoomCodeResponse createPrivateRoom(@RequestBody CreatePrivateRoomRequest request) {
         User user = userService.getCurrentUser();
         roomService.validateUserNotInRoom(user);
-        Room room = roomService.createPrivateRoom(user, request.capacity());
+        Room room = roomService.createPrivateRoom(user, request.capacity(), request.mode());
         roomService.broadcastRoom(room);
         return new RoomCodeResponse(room.getCode());
     }
 
-    @PostMapping("/{code}/join")
+    @PostMapping("/join/{code}")
     public RoomCodeResponse joinPrivateRoom(@PathVariable String code) {
         User user = userService.getCurrentUser();
         roomService.validateUserNotInRoom(user);
@@ -42,7 +38,7 @@ public class RoomController {
         return new RoomCodeResponse(room.getCode());
     }
 
-    @PostMapping("/public/join")
+    @PostMapping("/join/public")
     public RoomCodeResponse joinPublicRoom() {
         User user = userService.getCurrentUser();
         roomService.validateUserNotInRoom(user);
@@ -51,18 +47,32 @@ public class RoomController {
         return new RoomCodeResponse(room.getCode());
     }
 
-    @GetMapping("/current")
-    public RoomResponse getCurrentRoom() {
-        User user = userService.getCurrentUser();
-        Room room = roomService.getCurrentRoom(user);
-        return roomMapper.toRoomResponse(room);
-    }
-
-    @PostMapping("/current/ready")
+    @PostMapping("/leave")
     public void leaveCurrentRoom() {
         User user = userService.getCurrentUser();
         Room room = roomService.getCurrentRoom(user);
         roomService.leaveRoom(user, room);
         roomService.broadcastRoom(room);
+    }
+
+    @PostMapping("/flip/{id}")
+    public void flipCard(@PathVariable int id) {
+        User user = userService.getCurrentUser();
+        Room room = roomService.getCurrentRoom(user);
+        roomService.flipCard(user, room, id);
+    }
+
+    @PostMapping("/skip")
+    public void skipMove() {
+        User user = userService.getCurrentUser();
+        Room room = roomService.getCurrentRoom(user);
+        roomService.skipMove(user, room);
+    }
+
+    @PostMapping("/submit")
+    public void submitMove() {
+        User user = userService.getCurrentUser();
+        Room room = roomService.getCurrentRoom(user);
+        roomService.submitMove(user, room);
     }
 }
