@@ -4,7 +4,6 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import ru.hse.chislius_server.exception.DataValidationException;
 import ru.hse.chislius_server.exception.EntityNotFoundException;
@@ -29,7 +28,7 @@ import java.util.Set;
 @Slf4j
 public class RoomService {
     private final GameService gameService;
-    private final SimpMessagingTemplate messagingTemplate;
+    private final UserService userService;
 
     @Getter
     private final Map<String, Room> codeRoomMap = new HashMap<>();
@@ -46,26 +45,26 @@ public class RoomService {
 
     public void validateUserNotInRoom(User user) {
         if (user.getCurrentRoom() != null) {
-            throw new DataValidationException("You should not be in room");
+            throw new DataValidationException("Вы должны выйти из комнаты, чтобы совершить это дейcтвие");
         }
     }
 
     public Room getCurrentRoom(User user) {
         if (user.getCurrentRoom() == null) {
-            throw new DataValidationException("You should be in room");
+            throw new DataValidationException("Вы должны войти в комнату, чтобы совершить это дейcтвие");
         }
         return user.getCurrentRoom();
     }
 
     public Room createPrivateRoom(User user, int capacity, int gameMode) {
         if (capacity < PRIVATE_ROOM_CAPACITY_MIN || capacity > PRIVATE_ROOM_CAPACITY_MAX) {
-            throw new DataValidationException("Wrong room capacity. Must be between " + PRIVATE_ROOM_CAPACITY_MIN + " and " + PRIVATE_ROOM_CAPACITY_MAX + ".");
+            throw new DataValidationException("Некорректное количество пользователей. Допускается от " + PRIVATE_ROOM_CAPACITY_MIN + " до " + PRIVATE_ROOM_CAPACITY_MAX);
         }
         GameMode mode = switch (gameMode) {
             case 0 -> GameMode.EASY;
             case 1 -> GameMode.MEDIUM;
             case 2 -> GameMode.HARD;
-            default -> throw new DataValidationException("Wrong game mode. Must be between " + GameMode.EASY.ordinal() + " and " + GameMode.HARD.ordinal() + ".");
+            default -> throw new DataValidationException("Некорректный режим игры");
         };
         Room room = new Room(RoomType.PRIVATE, capacity, mode);
         saveRoom(room);
@@ -76,7 +75,7 @@ public class RoomService {
     public Room joinPrivateRoom(User user, String code) {
         Room room = getByCode(code);
         if (room.getType() != RoomType.PRIVATE) {
-            throw new DataValidationException("Can join only private room");
+            throw new DataValidationException("По коду возможно присоединиться только к приватной комнате");
         }
         joinRoom(room, user);
         return room;
@@ -96,7 +95,7 @@ public class RoomService {
 
     public void leaveRoom(User user, Room room) {
         if (!room.getUsers().remove(user)) {
-            throw new DataValidationException("Unable to leave room.");
+            throw new DataValidationException("Не удалось покинуть комнату");
         }
         user.setCurrentRoom(null);
         if (room.getUsers().isEmpty()) {
@@ -116,13 +115,12 @@ public class RoomService {
     }
 
     public void broadcastRoom(Room room) {
-        messagingTemplate.convertAndSend("/topic/rooms/" + room.getCode(), "MOCK");
-        log.info("Send room {} broadcast {}", room.getCode(), room);
+        room.getUsers().forEach(userService::sendUpdate);
     }
 
     private Room getByCode(String code) {
         if (!codeRoomMap.containsKey(code)) {
-            throw new EntityNotFoundException("Room not found");
+            throw new EntityNotFoundException("Комната не найдена");
         }
         return codeRoomMap.get(code);
     }
@@ -151,10 +149,10 @@ public class RoomService {
 
     private void joinRoom(Room room, User user) {
         if (room.getState() != RoomState.WAIT) {
-            throw new DataValidationException("Room is started");
+            throw new DataValidationException("В комнате уже началась игра");
         }
         if (room.getUsers().size() == room.getCapacity()) {
-            throw new DataValidationException("Room is full");
+            throw new DataValidationException("В комнате нет свободных мест");
         }
         room.getUsers().add(user);
         if (room.getUsers().size() == room.getCapacity()) {
