@@ -38,24 +38,24 @@ class GameServiceImplTest {
     @Test
     void openCard_ShouldOpenCardIfValid() {
         Game game = gameService.createGame("Test game", GameMode.EASY);
-        assertTrue(gameService.openCard(game, 0, 0));
+        assertTrue(gameService.openCard(game, 0));
         assertTrue(game.cards.get(0).isOpen());
     }
 
     @Test
     void openCard_ShouldNotOpenAlreadyOpenedCard() {
         Game game = gameService.createGame("Test game", GameMode.EASY);
-        gameService.openCard(game, 0, 0);
-        assertFalse(gameService.openCard(game, 0, 0));
+        gameService.openCard(game, 0);
+        assertFalse(gameService.openCard(game, 0));
     }
 
     @Test
     void openCard_ShouldNotExceedMaxOpenCards() {
         Game game = gameService.createGame("Test game", GameMode.EASY);
         for (int i = 0; i < 3; i++) {
-            gameService.openCard(game, i, 0);
+            gameService.openCard(game, i);
         }
-        assertFalse(gameService.openCard(game, 3, 0));
+        assertFalse(gameService.openCard(game, 3));
     }
 
     @Test
@@ -70,8 +70,8 @@ class GameServiceImplTest {
         game.cards.add(new Card(2, Color.BLUE));
         game.cards.add(new Card(3, Color.GREEN));
 
-        gameService.openCard(game, 0, 0);
-        gameService.openCard(game, 0, 1);
+        gameService.openCard(game, 0);
+        gameService.openCard(game, 1);
 
         assertEquals(5, gameService.doMove(game));
         assertTrue(game.openCards.isEmpty());
@@ -90,8 +90,8 @@ class GameServiceImplTest {
         game.cards.add(new Card(2, Color.BLUE));
         game.cards.add(new Card(3, Color.GREEN));
 
-        gameService.openCard(game, 0, 0);
-        gameService.openCard(game, 0, 1);
+        gameService.openCard(game, 0);
+        gameService.openCard(game, 1);
 
         assertEquals(0, gameService.doMove(game));
         assertTrue(game.openCards.isEmpty());
@@ -110,8 +110,8 @@ class GameServiceImplTest {
         game.cards.add(new Card(2, Color.BLUE));
         game.cards.add(new Card(3, Color.GREEN));
 
-        gameService.openCard(game, 0, 0);
-        gameService.openCard(game, 0, 1);
+        gameService.openCard(game, 0);
+        gameService.openCard(game, 1);
 
         assertEquals(5, gameService.doMove(game));
         assertTrue(game.openCards.isEmpty());
@@ -130,8 +130,8 @@ class GameServiceImplTest {
         game.cards.add(new Card(2, Color.BLUE));
         game.cards.add(new Card(3, Color.GREEN));
 
-        gameService.openCard(game, 0, 0);
-        gameService.openCard(game, 0, 1);
+        gameService.openCard(game, 0);
+        gameService.openCard(game, 1);
 
         assertEquals(0, gameService.doMove(game));
         assertTrue(game.openCards.isEmpty());
@@ -150,8 +150,8 @@ class GameServiceImplTest {
         game.cards.add(new Card(2, Color.BLUE));
         game.cards.add(new Card(3, Color.RED));
 
-        gameService.openCard(game, 0, 0);
-        gameService.openCard(game, 0, 1);
+        gameService.openCard(game, 0);
+        gameService.openCard(game, 1);
 
         assertEquals(5, gameService.doMove(game));
         assertTrue(game.openCards.isEmpty());
@@ -170,8 +170,8 @@ class GameServiceImplTest {
         game.cards.add(new Card(2, Color.BLUE));
         game.cards.add(new Card(3, Color.GREEN));
 
-        gameService.openCard(game, 0, 0);
-        gameService.openCard(game, 0, 1);
+        gameService.openCard(game, 0);
+        gameService.openCard(game, 1);
 
         assertEquals(0, gameService.doMove(game));
         assertTrue(game.openCards.isEmpty());
@@ -181,8 +181,8 @@ class GameServiceImplTest {
     @Test
     void skipMove() {
         Game game = gameService.createGame("Test game", GameMode.EASY);
-        gameService.openCard(game, 0, 0);
-        gameService.openCard(game, 0, 1);
+        gameService.openCard(game, 0);
+        gameService.openCard(game, 1);
 
         gameService.skipMove(game);
         assertTrue(game.openCards.isEmpty());
