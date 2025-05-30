@@ -3,9 +3,9 @@ import MenuScreen from './MenuScreen'
 import RoomScreen from './RoomScreen'
 import EndScreen from './EndScreen'
 import {useAuth} from '../../context/TokenContext'
-import LoadingSpinner from '../LoadingSpinner'
+import LoadingSpinner from '../utils/LoadingSpinner'
 import GameScreen from './GameScreen'
-import {States} from '../room/States'
+import {States} from '../utils/States'
 import {over} from 'stompjs'
 import SockJS from 'sockjs-client'
 import api from '../../client/ApiClient'
@@ -68,7 +68,15 @@ function MainScreen() {
     }
 
     const onError = (err) => {
+        console.error('WebSocket error:', err)
+        if (connected) {
+            console.log('Disconnect')
+            stompClient.disconnect()
+            setConnected(false)
+        }
         setState(null)
+        setConnected(false)
+        logout()
     }
 
     const renderScreen = () => {
@@ -81,7 +89,7 @@ function MainScreen() {
 
             case States.GAME:
             case States.MOVE:
-                return <GameScreen player={player} state={state} data={data}/>
+                // return <GameScreen player={player} state={state} data={data}/>
 
             case States.END:
                 return <EndScreen player={player} data={data}/>
@@ -91,9 +99,9 @@ function MainScreen() {
         }
     }
 
-    return (<>
+    return (<div className="main_screen">
         {renderScreen()}
-    </>)
+    </div>)
 }
 
 export default MainScreen

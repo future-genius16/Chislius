@@ -59,7 +59,7 @@ const LoginModal = ({show, onHide}) => {
             </Modal.Body>
 
             <Modal.Footer>
-                <Button variant="secondary" onClick={onHide}>Назад</Button>
+                <Button variant="outline-primary" onClick={onHide}>Назад</Button>
                 <Button variant="primary" type="submit" disabled={isLoading}>
                     {isLoading ? 'Загрузка...' : 'Войти'}
                 </Button>

@@ -1,17 +1,75 @@
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
-}
-
 .potion__image {
-  width: 100px;
+    width: 100px;
+}
+
+.board__cards-container {
+    /*width: 100%;*/
+    /*height: 100%;*/
+
+    display: grid;
+    grid-template-columns: repeat(4, 75px);
+    grid-template-rows: repeat(4, 100px);
+    gap: 5px;
+}
+
+.potions__container {
+    width: 100%;
+    height: 100%;
+
+    display: grid;
+    grid-template-columns: repeat(3, 100px);
+    gap: 10px;
+    margin-bottom: 30px;
+}
+
+.card {
+    /*width: 100%;*/
+    /*height: 100%;*/
+
+    /*background-color: transparent;*/
+    /*transition: box-shadow 1s;*/
+    /*perspective: 50px;*/
+}
+
+.card__container {
+    /*position: relative;*/
+    /*width: 100px;*/
+    /*height: 100px;*/
+    /*text-align: left;*/
+
+    transition: transform .8s;
+    transform-style: preserve-3d;
+}
+
+.card__container:hover {
+    cursor: pointer;
+}
+
+.card_open {
+    transform: rotateY(180deg);
+}
+
+.card__front, .card__back {
+    position: absolute;
+    backface-visibility: hidden;
+}
+
+.card__back {
+    display: block;
+    object-fit: contain;
+    object-position: center center;
+    transform: rotateY(180deg);
+}
+
+.card__image {
+    width: 75px;
+    height: 100px;
+}
+
+.card_invisible {
+    visibility: hidden;
+}
+
+.auth_screen {
+    background: linear-gradient(#E5E3FF, #7A71FF);
 }

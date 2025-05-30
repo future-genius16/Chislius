@@ -1,8 +1,6 @@
 import axios from 'axios'
 
 class ApiClient {
-    test = false
-
     constructor(baseURL) {
         this.client = axios.create({
             baseURL, headers: {
@@ -24,16 +22,6 @@ class ApiClient {
         try {
             const response = await this.client.post('/users/login', request)
             return response.data
-        } catch (error) {
-            throw this.handleError(error)
-        }
-    }
-
-    async logout(token) {
-        try {
-            if (!this.test) {
-                await this.client.post('/users/logout')
-            }
         } catch (error) {
             throw this.handleError(error)
         }

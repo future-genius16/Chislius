@@ -1,5 +1,4 @@
 import React from 'react'
-import './Form.css'
 
 function Form({onSubmit, canSubmit, onSkip}) {
     return (<nav className="form">

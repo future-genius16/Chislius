@@ -20,10 +20,16 @@ const JoinPrivateModal = ({show, onHide}) => {
         setIsLoading(true)
         setError('')
 
+        if (formData.code === '') {
+            setError('Введите код комнаты')
+            return
+        }
+
         api.joinPrivateRoom(token, formData.code).then(() => {
             onHide()
         }).catch((err) => {
             setError(err.message)
+        }).finally(() => {
             setIsLoading(false)
         })
     }
@@ -48,7 +54,7 @@ const JoinPrivateModal = ({show, onHide}) => {
             </Modal.Body>
 
             <Modal.Footer>
-                <Button variant="secondary" onClick={onHide} disabled={isLoading}>
+                <Button variant="outline-primary" onClick={onHide} disabled={isLoading}>
                     Отмена
                 </Button>
                 <Button variant="primary" type="submit" disabled={isLoading}>

@@ -1,5 +1,4 @@
 import {createContext, useContext, useEffect, useState} from 'react'
-import api from '../client/ApiClient'
 
 const TokenContext = createContext()
 
@@ -7,7 +6,7 @@ export const TokenProvider = ({children}) => {
     const [token, setToken] = useState(localStorage.getItem('token'))
 
     useEffect(() => {
-        console.log(token);
+        console.log(token)
     }, [])
 
     const login = (newToken) => {

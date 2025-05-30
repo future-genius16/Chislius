@@ -35,6 +35,7 @@ const RegisterModal = ({show, onHide, onSuccess}) => {
             onHide()
         })).catch((err) => {
             setError(err.message)
+        }).finally(() => {
             setIsLoading(false)
         })
     }
@@ -77,7 +78,7 @@ const RegisterModal = ({show, onHide, onSuccess}) => {
             </Modal.Body>
 
             <Modal.Footer>
-                <Button variant="secondary" onClick={onHide}>Cancel</Button>
+                <Button variant="outline-primary" onClick={onHide}>Cancel</Button>
                 <Button variant="primary" type="submit" disabled={isLoading}>
                     {isLoading ? 'Загрузка...' : 'Зарегистрироваться'}
                 </Button>

@@ -3,10 +3,10 @@ import {Alert, Button, Form, Modal} from 'react-bootstrap'
 import api from '../../client/ApiClient'
 import {useAuth} from '../../context/TokenContext'
 
-const CreatePrivateModal = ({show, onHide}) => {
+const ChangeNameModal = ({show, onHide}) => {
     const {token} = useAuth()
 
-    const [formData, setFormData] = useState({capacity: ''})
+    const [formData, setFormData] = useState({username: ''})
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState('')
 
@@ -20,43 +20,46 @@ const CreatePrivateModal = ({show, onHide}) => {
         setIsLoading(true)
         setError('')
 
-        api.createPrivateRoom(token, formData).then(() => {
+        api.changeName(token, formData.username).then(() => {
+            console.log("Hide")
             onHide()
         }).catch((err) => {
+            console.log("Error")
             setError(err.message)
+        }).finally(() => {
             setIsLoading(false)
         })
     }
 
     return (<Modal show={show} onHide={onHide}>
         <Modal.Header closeButton>
-            <Modal.Title>Присоединиться к приватной комнате</Modal.Title>
+            <Modal.Title>Смена имени пользователя</Modal.Title>
         </Modal.Header>
 
         <Form onSubmit={handleSubmit}>
             <Modal.Body>
                 {error && <Alert variant="danger">{error}</Alert>}
                 <Form.Group className="mb-3">
-                    <Form.Label>Количество игроков</Form.Label>
+                    <Form.Label>Новое имя пользователя</Form.Label>
                     <Form.Control
                         type="text"
-                        name="capacity"
-                        value={formData.capacity}
+                        name="username"
+                        value={formData.username}
                         onChange={handleChange}
                     />
                 </Form.Group>
             </Modal.Body>
 
             <Modal.Footer>
-                <Button variant="secondary" onClick={onHide} disabled={isLoading}>
+                <Button variant="outline-primary" onClick={onHide} disabled={isLoading}>
                     Отмена
                 </Button>
                 <Button variant="primary" type="submit" disabled={isLoading}>
-                    {isLoading ? 'Создание...' : 'Создать'}
+                    {isLoading ? 'Сохранение...' : 'Сохранить изменения'}
                 </Button>
             </Modal.Footer>
         </Form>
     </Modal>)
 }
 
-export default CreatePrivateModal
+export default ChangeNameModal

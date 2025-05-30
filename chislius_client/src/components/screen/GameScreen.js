@@ -1,12 +1,12 @@
 import React, {useEffect, useState} from 'react'
-import Board from '../board/Board'
-import Form from '../form/Form'
-import Potions from '../potion/Potions'
-import {Container} from 'react-bootstrap'
+import Board from '../game/Board'
+import Potions from '../game/Potions'
+import {Button, Container} from 'react-bootstrap'
 import api from '../../client/ApiClient'
 import RoomNavbar from '../navbar/RoomNavbar'
-import {States} from '../room/States'
+import {States} from '../utils/States'
 import {useAuth} from '../../context/TokenContext'
+import Player from '../game/Player'
 
 function GameScreen({player, state, data}) {
     const {token} = useAuth()
@@ -97,25 +97,33 @@ function GameScreen({player, state, data}) {
 
     return (<>
         <RoomNavbar player={player} data={data}/>
-        <Container>
-            <h1>Комната {data.code}</h1>
-            <h2>Игроки ждут хода:</h2>
-            <ul>
-                {data.players.map(otherPlayer => (<li key={otherPlayer.id}>
-                    {otherPlayer.name}{otherPlayer.id === player.id && ' (Вы)'} Счет: {otherPlayer.score}
-                </li>))}
-            </ul>
-            <h2>Текущий игрок:</h2>
-            <b>{data.currentPlayer.name}{data.currentPlayer.id === player.id && ' (Вы)'} Счет: {data.currentPlayer.score}</b>
+        <Container className={'mt-3'}>
+            <div className="container text-center">
+                <div className="row align-items-start">
+                    <div className="col">
+                        <Potions potions={potionsList}/>
+                        <Board onClick={onCardClick} cards={cardsList}/>
+                    </div>
+                    <div className="col">
+                        <h2>Игроки ждут хода:</h2>
+                            {data.players.map(otherPlayer => (<><Player player={otherPlayer}/>
+                                {otherPlayer.id === player.id && ' (Вы)'}<b> Счет: {otherPlayer.score}</b></>
+                            ))}
+
+                        <h2>Текущий игрок:</h2>
+                        <Player
+                            player={data.currentPlayer}/>{data.currentPlayer.id === player.id && ' (Вы)'}<b> Счет: {data.currentPlayer.score}</b>
+
+                        {state === States.MOVE && <>
+                            <Button size="lg" className="mt-3 mb-3 w-100" onClick={handleSubmit}>Сварить</Button>
+                            <Button size="lg" className="mb-3 w-100" onClick={handleSkip}>Пропустить</Button>
+                        </>}
+                    </div>
+                </div>
+            </div>
         </Container>
-        <Potions potions={potionsList}/>
-        <Board onClick={onCardClick} cards={cardsList}/>
-        {state === 3 && <Form
-            onSubmit={handleSubmit}
-            canSubmit={() => true}
-            onSkip={handleSkip}
-        />}
-    </>)
+    </>
+)
 }
 
 export default GameScreen
