@@ -60,6 +60,7 @@ public class RoomController {
         User user = userService.getCurrentUser();
         Room room = roomService.getCurrentRoom(user);
         roomService.flipCard(user, room, id);
+        roomService.broadcastRoom(room);
     }
 
     @PostMapping("/skip")
@@ -67,6 +68,7 @@ public class RoomController {
         User user = userService.getCurrentUser();
         Room room = roomService.getCurrentRoom(user);
         roomService.skipMove(user, room);
+        roomService.broadcastRoom(room);
     }
 
     @PostMapping("/submit")
@@ -74,5 +76,6 @@ public class RoomController {
         User user = userService.getCurrentUser();
         Room room = roomService.getCurrentRoom(user);
         roomService.submitMove(user, room);
+        roomService.broadcastRoom(room);
     }
 }
