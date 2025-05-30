@@ -29,8 +29,8 @@ public class UserController {
     }
 
     @GetMapping("/update")
-    public UpdateResponse update(){
-        return userService.getUpdateResponse();
+    public void update(){
+        userService.getUpdateResponse();
     }
 
     @PostMapping("/username")

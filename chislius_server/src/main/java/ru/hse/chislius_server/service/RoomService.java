@@ -186,6 +186,7 @@ public class RoomService {
             gameService.skipMove(room.getGame());
             room.getPlayers().add(0, user);
             room.setCurrentPlayer(room.getPlayers().removeLast());
+            checkGameOver(room);
         } else {
             throw new DataValidationException("Сейчас не ваш ход");
         }
@@ -197,8 +198,16 @@ public class RoomService {
             room.getScores().put(user, room.getScores().get(user) + d);
             room.getPlayers().add(0, user);
             room.setCurrentPlayer(room.getPlayers().removeLast());
+            checkGameOver(room);
         } else {
             throw new DataValidationException("Сейчас не ваш ход");
+        }
+    }
+
+    private void checkGameOver(Room room) {
+        if (!gameService.canMove(room.getGame())) {
+            room.setState(RoomState.FINISH);
+            broadcastRoom(room);
         }
     }
 }

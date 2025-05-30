@@ -50,7 +50,7 @@ public class UserService {
     }
 
     public User getUserByUsername(String username) {
-        return users.stream().filter((u) -> u.getUsername().equals(username)).findAny().orElseThrow(() -> new EntityNotFoundException("User not found"));
+        return users.stream().filter((u) -> u.getUsername().equals(username)).findAny().orElseThrow(() -> new EntityNotFoundException("Пользователь не найден"));
     }
 
     private void save(User user) {
@@ -83,13 +83,12 @@ public class UserService {
         return String.format("%06d", number);
     }
 
-    private User getUserByToken(String token) {
+    public User getUserByToken(String token) {
         return users.stream().filter((u) -> u.getToken().equals(token)).findAny().orElseThrow(() -> new AuthorizationException("Пользователь не найден"));
     }
 
-    public UpdateResponse getUpdateResponse() {
-        User user = getCurrentUser();
-        return new UpdateResponse(user);
+    public void getUpdateResponse() {
+        sendUpdate(getCurrentUser());
     }
 
     public void changeUsername(String username) {
