@@ -9,7 +9,7 @@ public interface GameService {
 
     Game getGame(String key);
 
-    boolean openCard(Game game, int x, int y);
+    boolean openCard(Game game, int i);
 
     int doMove(Game game);
 
