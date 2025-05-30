@@ -6,8 +6,11 @@ import {Container} from 'react-bootstrap'
 import api from '../../client/ApiClient'
 import RoomNavbar from '../navbar/RoomNavbar'
 import {States} from '../room/States'
+import {useAuth} from '../../context/TokenContext'
 
 function GameScreen({player, state, data}) {
+    const {token} = useAuth()
+
     const [cardsList, setCardsList] = useState([])
     const [potionsList, setPotionsList] = useState([])
 
@@ -68,31 +71,28 @@ function GameScreen({player, state, data}) {
         }
     }, [data.board.cards, data.board.potions])
 
-    const handleSubmit = async () => {
+    const handleSubmit = () => {
         if (state !== States.MOVE) return
-        try {
-            await api.submitMove()
-        } catch (err) {
+
+        api.submitMove(token).catch((err) => {
             alert(err.message)
-        }
+        })
     }
 
-    const handleSkip = async () => {
+    const handleSkip = () => {
         if (state !== States.MOVE) return
-        try {
-            await api.skipMove()
-        } catch (err) {
+
+        api.skipMove(token).catch((err) => {
             alert(err.message)
-        }
+        })
     }
 
-    const onCardClick = async (clickedCard) => {
+    const onCardClick = (clickedCard) => {
         if (state !== States.MOVE) return
-        try {
-            await api.flipCard(clickedCard.id)
-        } catch (err) {
+
+        api.flipCard(token, clickedCard.id).catch((err) => {
             alert(err.message)
-        }
+        })
     }
 
     return (<>

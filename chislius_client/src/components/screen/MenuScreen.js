@@ -5,8 +5,11 @@ import LogoutModal from '../user/LogoutModal'
 import ChangeNameModal from '../user/ChangeNameModal'
 import JoinPrivateModal from '../user/JoinPrivateModal'
 import CreatePrivateModal from '../user/CreatePrivateModal'
+import {useAuth} from '../../context/TokenContext'
 
 function MenuScreen({player}) {
+    const {token} = useAuth()
+
     const [showLogout, setShowLogout] = useState(false)
     const [showChangeName, setShowChangeName] = useState(false)
     // const [showChangeAvatar, setShowChangeAvatar] = useState(false);
@@ -14,14 +17,10 @@ function MenuScreen({player}) {
     const [showJoinPrivate, setShowJoinPrivate] = useState(false)
     const [showCreatePrivate, setShowCreatePrivate] = useState(false)
 
-    const onJoinPublicClick = async (e) => {
-        e.preventDefault()
-        try {
-            const response = await api.joinPublicRoom()
-            console.log(response)
-        } catch (err) {
+    const onJoinPublicClick = () => {
+        api.joinPublicRoom(token).catch((err) => {
             console.log(err.message)
-        }
+        })
     }
 
     return (<>

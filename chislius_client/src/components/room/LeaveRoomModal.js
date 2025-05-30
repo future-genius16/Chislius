@@ -1,23 +1,24 @@
 import React, {useState} from 'react'
 import {Alert, Button, Modal} from 'react-bootstrap'
 import api from '../../client/ApiClient'
+import {useAuth} from '../../context/TokenContext'
 
 const LeaveRoomModal = ({show, onHide}) => {
+    const {token, logout} = useAuth()
+
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState('')
 
-    const handleClick = async () => {
+    const handleClick = () => {
         setIsLoading(true)
         setError('')
 
-        try {
-            await api.leaveRoom()
+        api.leaveRoom(token).then(() => {
             onHide()
-        } catch (err) {
+        }).catch((err) => {
             setError(err.message)
-        } finally {
             setIsLoading(false)
-        }
+        })
     }
 
     return (<Modal show={show} onHide={onHide}>
