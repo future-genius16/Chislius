@@ -53,6 +53,10 @@ public class UserService {
         return users.stream().filter((u) -> u.getUsername().equals(username)).findAny().orElseThrow(() -> new EntityNotFoundException("Пользователь не найден"));
     }
 
+    public User getUserBySessionId(String sessionId) {
+        return users.stream().filter((u) -> u.getSessionId().equals(sessionId)).findAny().orElse(null);
+    }
+
     private void save(User user) {
         synchronized (users) {
             if (users.stream().anyMatch((u) -> u.getUsername().equals(user.getUsername()))) {
