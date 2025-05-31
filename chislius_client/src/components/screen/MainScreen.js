@@ -89,7 +89,7 @@ function MainScreen() {
 
             case States.GAME:
             case States.MOVE:
-                // return <GameScreen player={player} state={state} data={data}/>
+                return <GameScreen player={player} state={state} data={data}/>
 
             case States.END:
                 return <EndScreen player={player} data={data}/>
