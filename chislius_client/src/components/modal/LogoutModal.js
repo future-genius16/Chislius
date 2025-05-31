@@ -18,7 +18,7 @@ const LogoutModal = ({show, onHide}) => {
         </Modal.Body>
 
         <Modal.Footer>
-            <Button variant="secondary" onClick={onHide}>Отмена</Button>
+            <Button variant="outline-primary" onClick={onHide}>Отмена</Button>
             <Button variant="primary" type="submit" onClick={handleClick}>Выход</Button>
         </Modal.Footer>
     </Modal>)

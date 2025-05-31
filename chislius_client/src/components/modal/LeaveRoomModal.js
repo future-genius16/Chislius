@@ -1,23 +1,27 @@
 import React, {useState} from 'react'
 import {Alert, Button, Modal} from 'react-bootstrap'
 import api from '../../client/ApiClient'
+import {useAuth} from '../../context/TokenContext'
 
 const LeaveRoomModal = ({show, onHide}) => {
+    const {token} = useAuth()
+
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState('')
 
-    const handleClick = async () => {
-        setIsLoading(true)
+    const handleClick = () => {
+        setIsLoading(false)
         setError('')
 
-        try {
-            await api.leaveRoom()
+        console.log("Leave")
+        api.leaveRoom(token).then(() => {
+            console.log("Comp")
             onHide()
-        } catch (err) {
+        }).catch((err) => {
+            console.log("Err")
             setError(err.message)
-        } finally {
             setIsLoading(false)
-        }
+        })
     }
 
     return (<Modal show={show} onHide={onHide}>
@@ -30,7 +34,7 @@ const LeaveRoomModal = ({show, onHide}) => {
         </Modal.Body>
 
         <Modal.Footer>
-            <Button variant="secondary" onClick={onHide}>Отмена</Button>
+            <Button variant="outline-primary" onClick={onHide}>Отмена</Button>
             <Button variant="primary" type="submit" onClick={handleClick} disabled={isLoading}>
                 {isLoading ? 'Загрузка...' : 'Выход'}</Button>
         </Modal.Footer>

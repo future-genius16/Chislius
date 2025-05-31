@@ -16,29 +16,28 @@ const RegisterModal = ({show, onHide, onSuccess}) => {
         setFormData(prev => ({...prev, [name]: value}))
     }
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = (e) => {
         e.preventDefault()
         setIsLoading(true)
         setError(null)
 
-        try {
-            if (formData.password === '') {
-                setError('Введите пароль')
-                return
-            }
-            if (formData.password !== formData.confirmPassword) {
-                setError('Пароли не совпадают')
-                return
-            }
+        if (formData.password === '') {
+            setError('Введите пароль')
+            return
+        }
+        if (formData.password !== formData.confirmPassword) {
+            setError('Пароли не совпадают')
+            return
+        }
 
-            const response = await api.register({username: formData.username, password: formData.password})
+        api.register({username: formData.username, password: formData.password}).then((response => {
             login(response.token)
             onHide()
-        } catch (err) {
+        })).catch((err) => {
             setError(err.message)
-        } finally {
+        }).finally(() => {
             setIsLoading(false)
-        }
+        })
     }
 
     return (<Modal show={show} onHide={onHide}>
@@ -79,7 +78,7 @@ const RegisterModal = ({show, onHide, onSuccess}) => {
             </Modal.Body>
 
             <Modal.Footer>
-                <Button variant="secondary" onClick={onHide}>Cancel</Button>
+                <Button variant="outline-primary" onClick={onHide}>Cancel</Button>
                 <Button variant="primary" type="submit" disabled={isLoading}>
                     {isLoading ? 'Загрузка...' : 'Зарегистрироваться'}
                 </Button>

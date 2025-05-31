@@ -1,5 +1,6 @@
 import React from 'react'
-import './Card.css'
+import {Container} from 'react-bootstrap'
+import {Code, Cone} from 'react-bootstrap-icons'
 
 function Card({card, onClick}) {
     const handleClick = () => {
@@ -30,16 +31,16 @@ function Card({card, onClick}) {
         }
     }
 
-    return (<article className={`card"${!card.img == null ? ' card_invisible' : ''}`} onClick={handleClick}>
-        <div className={`card__container${!card.isOpen ? ' card_open' : ''}`}>
-            <div className="card__front">
+    return (<Container className={`p-0 card"${!card.img == null ? ' card_invisible' : ''}`} onClick={handleClick}>
+        <Container className={`p-0 card__container${!card.isOpen ? ' card_open' : ''}`}>
+            <Container className="p-0 card__front">
                 {getCardFrontImage()}
-            </div>
-            <div className="card__back">
+            </Container>
+            <Container className="p-0 card__back">
                 {getCardBackImage()}
-            </div>
-        </div>
-    </article>)
+            </Container>
+        </Container>
+    </Container>)
 }
 
 export default Card

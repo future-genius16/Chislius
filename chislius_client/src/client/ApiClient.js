@@ -1,22 +1,12 @@
 import axios from 'axios'
 
 class ApiClient {
-    test = false
-
     constructor(baseURL) {
         this.client = axios.create({
             baseURL, headers: {
                 'Content-Type': 'application/json'
-            }
+            }, timeout: 5000
         })
-    }
-
-    setAuthToken(token) {
-        this.client.defaults.headers.common['x-user-token'] = token
-    }
-
-    clearAuthToken() {
-        delete this.client.defaults.headers.common['x-user-token']
     }
 
     async register(request) {
@@ -37,93 +27,86 @@ class ApiClient {
         }
     }
 
-    async logout() {
+    async update(token) {
         try {
-            if (!this.test) {
-                await this.client.post('/users/logout')
-            }
+            await this.client.get('/users/update', {headers: {'x-user-token': token}})
         } catch (error) {
             throw this.handleError(error)
         }
     }
 
-    async update() {
+    async changeName(token, username) {
         try {
-            const response = await this.client.get('/users/update')
+            console.log('1143234')
+            await this.client.post('/users/username', {username: username}, {headers: {'x-user-token': token}})
+        } catch (error) {
+            throw this.handleError(error)
+        }
+    }
+
+    async createPrivateRoom(token, request) {
+        try {
+            const response = await this.client.post('/rooms', request, {headers: {'x-user-token': token}})
             return response.data
         } catch (error) {
             throw this.handleError(error)
         }
     }
 
-    async changeName(username) {
+    async joinPrivateRoom(token, code) {
         try {
-            await this.client.post('/users/username', {username: username})
+            await this.client.post('/rooms/join/' + code, null, {headers: {'x-user-token': token}})
         } catch (error) {
             throw this.handleError(error)
         }
     }
 
-    async createPrivateRoom(request) {
+    async joinPublicRoom(token) {
         try {
-            const response = await this.client.post('/rooms', request)
-            return response.data
+            await this.client.post('/rooms/join/public', null, {headers: {'x-user-token': token}})
         } catch (error) {
             throw this.handleError(error)
         }
     }
 
-    async joinPrivateRoom(code) {
+    async leaveRoom(token) {
         try {
-            await this.client.post('/rooms/join/' + code)
+            await this.client.post('/rooms/leave', null, {headers: {'x-user-token': token}})
         } catch (error) {
             throw this.handleError(error)
         }
     }
 
-    async joinPublicRoom() {
+    async flipCard(token, id) {
         try {
-            await this.client.post('/rooms/join/public')
+            await this.client.post('/rooms/flip/' + id, null, {headers: {'x-user-token': token}})
         } catch (error) {
             throw this.handleError(error)
         }
     }
 
-    async leaveRoom() {
+    async skipMove(token) {
         try {
-            await this.client.post('/rooms/leave')
+            await this.client.post('/rooms/skip', null, {headers: {'x-user-token': token}})
         } catch (error) {
             throw this.handleError(error)
         }
     }
 
-    async flipCard(id) {
+    async submitMove(token) {
         try {
-            await this.client.post('/rooms/flip/' + id)
+            await this.client.post('/rooms/submit', null, {headers: {'x-user-token': token}})
         } catch (error) {
             throw this.handleError(error)
         }
     }
-
-    async skipMove() {
-        try {
-            await this.client.post('/rooms/skip')
-        } catch (error) {
-            throw this.handleError(error)
-        }
-    }
-
-    async submitMove() {
-        try {
-            await this.client.post('/rooms/submit')
-        } catch (error) {
-            throw this.handleError(error)
-        }
-    }
-
 
     handleError(error) {
         console.log(error)
+        if (error.code === 'ECONNABORTED') {
+            console.log(error)
+            return new Error('Превышено время ожидания ответа от сервера')
+        }
         if (error.response) {
             return new Error(error.response.data.detail || `Запрос выполнен с ошибкой. Код ${error.response.status}`)
         } else if (error.request) {

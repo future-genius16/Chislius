@@ -1,0 +1,26 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&display=swap');
+
+$primary: #4436FF;
+$light: #E1DFFF;
+
+$font-family-sans-serif:
+        "Nunito Sans",
+  // Cross-platform generic font family (default user interface font)
+        system-ui,
+          // Safari for macOS and iOS (San Francisco)
+        -apple-system,
+          // Windows
+        "Segoe UI",
+          // Android
+        Roboto,
+          // Basic web fallback
+        "Helvetica Neue", Arial,
+          // Linux
+        "Noto Sans",
+        "Liberation Sans",
+          // Sans serif fallback
+        sans-serif,
+          // Emoji fonts
+        "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji" !default;
+
+@import '~bootstrap/scss/bootstrap.scss';
