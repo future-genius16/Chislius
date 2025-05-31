@@ -97,6 +97,7 @@ public class UserService {
         }
         User user = getCurrentUser();
         user.setUsername(username);
+        sendUpdate(user);
     }
 
     public void sendUpdate(User user) {
