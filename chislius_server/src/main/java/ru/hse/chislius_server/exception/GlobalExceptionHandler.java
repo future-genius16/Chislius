@@ -25,17 +25,17 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(GenerationTimeoutException.class)
     public ErrorResponse handleGenerationTimeoutException(GenerationTimeoutException ex) {
-        return ErrorResponse.create(ex, HttpStatus.REQUEST_TIMEOUT, "Please try again.");
+        return ErrorResponse.create(ex, HttpStatus.REQUEST_TIMEOUT, "Повторите попытку еще раз");
     }
 
     @ExceptionHandler(NoResourceFoundException.class)
     public ErrorResponse handleNoResourceFoundException(NoResourceFoundException ex) {
-        return ErrorResponse.create(ex, HttpStatus.NOT_FOUND, "Resource not found.");
+        return ErrorResponse.create(ex, HttpStatus.NOT_FOUND, "Адрес запроса не найден");
     }
 
     @ExceptionHandler(Exception.class)
     public ErrorResponse handleException(Exception ex) {
         ex.printStackTrace();
-        return ErrorResponse.create(ex, HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error.");
+        return ErrorResponse.create(ex, HttpStatus.INTERNAL_SERVER_ERROR, "Внутренняя ошибка сервера");
     }
 }

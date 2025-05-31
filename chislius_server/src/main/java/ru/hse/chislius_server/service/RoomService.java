@@ -181,7 +181,7 @@ public class RoomService {
     public void flipCard(User user, Room room, int id) {
         if (room.getCurrentPlayer() == user) {
             if (!gameService.openCard(room.getGame(), id)){
-                throw new DataValidationException("Невозможно открыть еще одну карту");
+                throw new DataValidationException("Вы не можете перевернуть эту карту");
             }
             broadcastRoom(room);
         } else {
