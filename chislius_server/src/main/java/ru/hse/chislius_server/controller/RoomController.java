@@ -25,7 +25,6 @@ public class RoomController {
         User user = userService.getCurrentUser();
         roomService.validateUserNotInRoom(user);
         Room room = roomService.createPrivateRoom(user, request.capacity(), request.mode());
-        roomService.broadcastRoom(room);
         return new RoomCodeResponse(room.getCode());
     }
 
@@ -34,7 +33,6 @@ public class RoomController {
         User user = userService.getCurrentUser();
         roomService.validateUserNotInRoom(user);
         Room room = roomService.joinPrivateRoom(user, code);
-        roomService.broadcastRoom(room);
         return new RoomCodeResponse(room.getCode());
     }
 
@@ -43,7 +41,6 @@ public class RoomController {
         User user = userService.getCurrentUser();
         roomService.validateUserNotInRoom(user);
         Room room = roomService.joinPublicRoom(user);
-        roomService.broadcastRoom(room);
         return new RoomCodeResponse(room.getCode());
     }
 
@@ -52,7 +49,7 @@ public class RoomController {
         User user = userService.getCurrentUser();
         Room room = roomService.getCurrentRoom(user);
         roomService.leaveRoom(user, room);
-        roomService.broadcastRoom(room);
+        userService.sendUpdate(user);
     }
 
     @PostMapping("/flip/{id}")
@@ -60,7 +57,6 @@ public class RoomController {
         User user = userService.getCurrentUser();
         Room room = roomService.getCurrentRoom(user);
         roomService.flipCard(user, room, id);
-        roomService.broadcastRoom(room);
     }
 
     @PostMapping("/skip")
@@ -68,7 +64,6 @@ public class RoomController {
         User user = userService.getCurrentUser();
         Room room = roomService.getCurrentRoom(user);
         roomService.skipMove(user, room);
-        roomService.broadcastRoom(room);
     }
 
     @PostMapping("/submit")
@@ -76,6 +71,5 @@ public class RoomController {
         User user = userService.getCurrentUser();
         Room room = roomService.getCurrentRoom(user);
         roomService.submitMove(user, room);
-        roomService.broadcastRoom(room);
     }
 }

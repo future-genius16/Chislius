@@ -69,6 +69,7 @@ public class RoomService {
         Room room = new Room(RoomType.PRIVATE, capacity, mode);
         saveRoom(room);
         joinRoom(room, user);
+        broadcastRoom(room);
         return room;
     }
 
@@ -78,6 +79,7 @@ public class RoomService {
             throw new DataValidationException("По коду возможно присоединиться только к приватной комнате");
         }
         joinRoom(room, user);
+        broadcastRoom(room);
         return room;
     }
 
@@ -90,6 +92,7 @@ public class RoomService {
             return newRoom;
         });
         joinRoom(room, user);
+        broadcastRoom(room);
         return room;
     }
 
@@ -97,6 +100,7 @@ public class RoomService {
         if (!room.getUsers().remove(user)) {
             throw new DataValidationException("Не удалось покинуть комнату");
         }
+        userService.sendUpdate(user);
         user.setCurrentRoom(null);
         if (room.getUsers().isEmpty()) {
             deleteRoom(room);
@@ -107,10 +111,12 @@ public class RoomService {
         } else {
             room.getPlayers().remove(user);
         }
+        broadcastRoom(room);
     }
 
     private void deleteRoom(Room room) {
         codeRoomMap.remove(room.getCode());
+        publicRooms.remove(room);
         room.setState(RoomState.DELETE);
     }
 
@@ -169,13 +175,15 @@ public class RoomService {
         Collections.shuffle(room.getPlayers());
         room.setCurrentPlayer(room.getPlayers().removeLast());
         room.getUsers().forEach((user) -> room.getScores().put(user, 0));
+        broadcastRoom(room);
     }
 
     public void flipCard(User user, Room room, int id) {
         if (room.getCurrentPlayer() == user) {
-            if (!gameService.openCard(room.getGame(), (id - 1) / 4, (id - 1) % 4)){
-                throw new DataValidationException("Невозможно открыть еще одну карту");
+            if (!gameService.openCard(room.getGame(), id)){
+                throw new DataValidationException("Вы не можете перевернуть эту карту");
             }
+            broadcastRoom(room);
         } else {
             throw new DataValidationException("Сейчас не ваш ход");
         }
@@ -187,6 +195,7 @@ public class RoomService {
             room.getPlayers().add(0, user);
             room.setCurrentPlayer(room.getPlayers().removeLast());
             checkGameOver(room);
+            broadcastRoom(room);
         } else {
             throw new DataValidationException("Сейчас не ваш ход");
         }
@@ -199,6 +208,7 @@ public class RoomService {
             room.getPlayers().add(0, user);
             room.setCurrentPlayer(room.getPlayers().removeLast());
             checkGameOver(room);
+            broadcastRoom(room);
         } else {
             throw new DataValidationException("Сейчас не ваш ход");
         }
@@ -207,7 +217,6 @@ public class RoomService {
     private void checkGameOver(Room room) {
         if (!gameService.canMove(room.getGame())) {
             room.setState(RoomState.FINISH);
-            broadcastRoom(room);
         }
     }
 }

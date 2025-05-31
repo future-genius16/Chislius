@@ -13,6 +13,7 @@ public final class RoomUpdate {
     private final String code;
     private final boolean open;
     private final int capacity;
+    private final int mode;
     private final List<UserResponse> players;
     private final UserResponse currentPlayer;
     private final GameResponse board;
@@ -21,6 +22,7 @@ public final class RoomUpdate {
         this.code = room.getCode();
         this.open = room.getType() == RoomType.PUBLIC;
         this.capacity = room.getCapacity();
+        this.mode = room.getMode().ordinal();
         if (room.getState() == RoomState.WAIT) {
             this.players = room.getUsers().stream().map(UserResponse::new).toList();
             currentPlayer = null;
