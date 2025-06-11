@@ -16,6 +16,11 @@ public class SessionRepository {
         sessionIdToUserId.put(sessionId, userId);
     }
 
+    public void deleteSession(long userId, String sessionId) {
+        userIdToSessionId.remove(userId, sessionId);
+        sessionIdToUserId.remove(sessionId, userId);
+    }
+
     public Optional<Long> findUserId(String sessionId) {
         return Optional.ofNullable(sessionIdToUserId.get(sessionId));
     }
