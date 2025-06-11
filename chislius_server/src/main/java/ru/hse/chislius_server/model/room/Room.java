@@ -15,10 +15,10 @@ import java.util.Set;
 @Data
 @EqualsAndHashCode(of = {"type", "capacity"})
 public class Room {
-    private final Set<User> users = new HashSet<>();
-    private final Map<User, Integer> scores = new HashMap<>();
-    private final LinkedList<User> players = new LinkedList<>();
-    private User currentPlayer;
+    private final Set<Long> userIds = new HashSet<>();
+    private final Map<Long, Integer> scores = new HashMap<>();
+    private final LinkedList<Long> playerIds = new LinkedList<>();
+    private long currentPlayerId;
     private final RoomType type;
     private final int capacity;
     private RoomState state;

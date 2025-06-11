@@ -1,6 +1,5 @@
 package ru.hse.chislius_server.service;
 
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,28 +10,21 @@ import ru.hse.chislius_server.exception.GenerationTimeoutException;
 import ru.hse.chislius_server.game.entity.Game;
 import ru.hse.chislius_server.game.models.GameMode;
 import ru.hse.chislius_server.game.service.GameService;
-import ru.hse.chislius_server.model.User;
 import ru.hse.chislius_server.model.room.Room;
 import ru.hse.chislius_server.model.room.RoomState;
 import ru.hse.chislius_server.model.room.RoomType;
+import ru.hse.chislius_server.repository.RoomRepository;
 
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
 import java.util.Random;
-import java.util.Set;
 
 @RequiredArgsConstructor
 @Service
 @Slf4j
 public class RoomService {
+    private final RoomRepository roomRepository;
     private final GameService gameService;
-    private final UserService userService;
-
-    @Getter
-    private final Map<String, Room> codeRoomMap = new HashMap<>();
-    private final Set<Room> publicRooms = new HashSet<>();
+    private final UpdateService updateService;
 
     @Value("${config.room.capacity.public}")
     private int PUBLIC_ROOM_CAPACITY;
@@ -43,20 +35,20 @@ public class RoomService {
     @Value("${config.room.capacity.private.max}")
     private int PRIVATE_ROOM_CAPACITY_MAX;
 
-    public void validateUserNotInRoom(User user) {
-        if (user.getCurrentRoom() != null) {
+    public void validateUserNotInRoom(long userId) {
+        Room room = roomRepository.findRoomByUserId(userId).orElse(null);
+        if (room != null) {
             throw new DataValidationException("Вы должны выйти из комнаты, чтобы совершить это дейcтвие");
         }
     }
 
-    public Room getCurrentRoom(User user) {
-        if (user.getCurrentRoom() == null) {
-            throw new DataValidationException("Вы должны войти в комнату, чтобы совершить это дейcтвие");
-        }
-        return user.getCurrentRoom();
+    public Room getCurrentRoom(long userId) {
+        return roomRepository.findRoomByUserId(userId)
+                .orElseThrow(() -> new DataValidationException("Вы должны войти в комнату, чтобы совершить это дейcтвие"));
     }
 
-    public Room createPrivateRoom(User user, int capacity, int gameMode) {
+    public Room createPrivateRoom(long userId, int capacity, int gameMode) {
+        validateUserNotInRoom(userId);
         if (capacity < PRIVATE_ROOM_CAPACITY_MIN || capacity > PRIVATE_ROOM_CAPACITY_MAX) {
             throw new DataValidationException("Некорректное количество пользователей. Допускается от " + PRIVATE_ROOM_CAPACITY_MIN + " до " + PRIVATE_ROOM_CAPACITY_MAX);
         }
@@ -68,77 +60,75 @@ public class RoomService {
         };
         Room room = new Room(RoomType.PRIVATE, capacity, mode);
         saveRoom(room);
-        joinRoom(room, user);
+        joinRoom(userId, room);
         broadcastRoom(room);
         return room;
     }
 
-    public Room joinPrivateRoom(User user, String code) {
+    public Room joinPrivateRoom(long userId, String code) {
+        validateUserNotInRoom(userId);
         Room room = getByCode(code);
         if (room.getType() != RoomType.PRIVATE) {
             throw new DataValidationException("По коду возможно присоединиться только к приватной комнате");
         }
-        joinRoom(room, user);
+        joinRoom(userId, room);
         broadcastRoom(room);
         return room;
     }
 
-    public Room joinPublicRoom(User user) {
-        Room room = publicRooms.stream().filter((r) -> r.getType() == RoomType.PUBLIC && r.getState() == RoomState.WAIT && r.getUsers().size() < r.getCapacity()).findAny().orElseGet(() -> {
+    public Room joinPublicRoom(long userId) {
+        validateUserNotInRoom(userId);
+        Room room = roomRepository.findNotStartedPublicRoom().orElseGet(() -> {
             Room newRoom = new Room(RoomType.PUBLIC, PUBLIC_ROOM_CAPACITY, GameMode.MEDIUM);
             saveRoom(newRoom);
             newRoom.setState(RoomState.WAIT);
-            publicRooms.add(newRoom);
             return newRoom;
         });
-        joinRoom(room, user);
+        joinRoom(userId, room);
         broadcastRoom(room);
         return room;
     }
 
-    public void leaveRoom(User user, Room room) {
-        if (!room.getUsers().remove(user)) {
+    public void leaveRoom(long userId) {
+        Room room = getCurrentRoom(userId);
+        if (!room.getUserIds().remove(userId)) {
             throw new DataValidationException("Не удалось покинуть комнату");
         }
-        userService.sendUpdate(user);
-        user.setCurrentRoom(null);
-        if (room.getUsers().isEmpty()) {
+        updateService.sendUpdate(userId, room);
+        roomRepository.deleteUserIdFromIndex(userId);
+        if (room.getUserIds().isEmpty()) {
             deleteRoom(room);
             return;
         }
-        if (room.getCurrentPlayer() == user){
-            room.setCurrentPlayer(room.getPlayers().removeLast());
+        if (room.getCurrentPlayerId() == userId) {
+            room.setCurrentPlayerId(room.getPlayerIds().removeLast());
         } else {
-            room.getPlayers().remove(user);
+            room.getPlayerIds().remove(userId);
         }
         broadcastRoom(room);
     }
 
     private void deleteRoom(Room room) {
-        codeRoomMap.remove(room.getCode());
-        publicRooms.remove(room);
+        roomRepository.deleteRoom(room);
         room.setState(RoomState.DELETE);
     }
 
     public void broadcastRoom(Room room) {
-        room.getUsers().forEach(userService::sendUpdate);
+        room.getUserIds().forEach((userId) -> updateService.sendUpdate(userId, room));
     }
 
     private Room getByCode(String code) {
-        if (!codeRoomMap.containsKey(code)) {
-            throw new EntityNotFoundException("Комната не найдена");
-        }
-        return codeRoomMap.get(code);
+        return roomRepository.findRoomByCode(code).orElseThrow(() -> new EntityNotFoundException("Комната не найдена"));
     }
 
     private void saveRoom(Room room) {
         int counter = 0;
         while (counter < 10) {
             String code = generateRoomCode();
-            if (!codeRoomMap.containsKey(code)) {
-                codeRoomMap.put(code, room);
+            if (roomRepository.findRoomByCode(code).isEmpty()) {
                 room.setCode(code);
                 room.setState(RoomState.WAIT);
+                roomRepository.saveRoom(room);
                 return;
             } else {
                 counter++;
@@ -153,34 +143,35 @@ public class RoomService {
         return String.format("%06d", number);
     }
 
-    private void joinRoom(Room room, User user) {
+    private void joinRoom(long userId, Room room) {
         if (room.getState() != RoomState.WAIT) {
             throw new DataValidationException("В комнате уже началась игра");
         }
-        if (room.getUsers().size() == room.getCapacity()) {
+        if (room.getUserIds().size() == room.getCapacity()) {
             throw new DataValidationException("В комнате нет свободных мест");
         }
-        room.getUsers().add(user);
-        if (room.getUsers().size() == room.getCapacity()) {
+        room.getUserIds().add(userId);
+        if (room.getUserIds().size() == room.getCapacity()) {
             startGame(room);
         }
-        user.setCurrentRoom(room);
+        roomRepository.createUserIdIndex(userId, room);
     }
 
     private void startGame(Room room) {
         room.setState(RoomState.IN_PROGRESS);
         Game game = gameService.createGame(room.getCode(), room.getMode());
         room.setGame(game);
-        room.getPlayers().addAll(room.getUsers());
-        Collections.shuffle(room.getPlayers());
-        room.setCurrentPlayer(room.getPlayers().removeLast());
-        room.getUsers().forEach((user) -> room.getScores().put(user, 0));
+        room.getPlayerIds().addAll(room.getUserIds());
+        Collections.shuffle(room.getPlayerIds());
+        room.setCurrentPlayerId(room.getPlayerIds().removeLast());
+        room.getUserIds().forEach((userId) -> room.getScores().put(userId, 0));
         broadcastRoom(room);
     }
 
-    public void flipCard(User user, Room room, int id) {
-        if (room.getCurrentPlayer() == user) {
-            if (!gameService.openCard(room.getGame(), id)){
+    public void flipCard(long userId, int id) {
+        Room room = getCurrentRoom(userId);
+        if (room.getCurrentPlayerId() == userId) {
+            if (!gameService.openCard(room.getGame(), id - 1)) {
                 throw new DataValidationException("Вы не можете перевернуть эту карту");
             }
             broadcastRoom(room);
@@ -189,11 +180,12 @@ public class RoomService {
         }
     }
 
-    public void skipMove(User user, Room room) {
-        if (room.getCurrentPlayer() == user) {
+    public void skipMove(long userId) {
+        Room room = getCurrentRoom(userId);
+        if (room.getCurrentPlayerId() == userId) {
             gameService.skipMove(room.getGame());
-            room.getPlayers().add(0, user);
-            room.setCurrentPlayer(room.getPlayers().removeLast());
+            room.getPlayerIds().add(0, userId);
+            room.setCurrentPlayerId(room.getPlayerIds().removeLast());
             checkGameOver(room);
             broadcastRoom(room);
         } else {
@@ -201,12 +193,13 @@ public class RoomService {
         }
     }
 
-    public void submitMove(User user, Room room) {
-        if (room.getCurrentPlayer() == user) {
+    public void submitMove(long userId) {
+        Room room = getCurrentRoom(userId);
+        if (room.getCurrentPlayerId() == userId) {
             int d = gameService.doMove(room.getGame());
-            room.getScores().put(user, room.getScores().get(user) + d);
-            room.getPlayers().add(0, user);
-            room.setCurrentPlayer(room.getPlayers().removeLast());
+            room.getScores().put(userId, room.getScores().get(userId) + d);
+            room.getPlayerIds().add(0, userId);
+            room.setCurrentPlayerId(room.getPlayerIds().removeLast());
             checkGameOver(room);
             broadcastRoom(room);
         } else {
