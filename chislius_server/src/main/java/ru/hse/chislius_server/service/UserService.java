@@ -11,19 +11,17 @@ import ru.hse.chislius_server.exception.DataValidationException;
 import ru.hse.chislius_server.exception.EntityNotFoundException;
 import ru.hse.chislius_server.exception.GenerationTimeoutException;
 import ru.hse.chislius_server.model.User;
+import ru.hse.chislius_server.repository.UserRepository;
 
-import java.util.HashSet;
 import java.util.Random;
-import java.util.Set;
 
 @RequiredArgsConstructor
 @Service
 @Slf4j
 public class UserService {
     private final UserContext userContext;
-
-    private final Set<User> users = new HashSet<>();
-    private final SimpMessagingTemplate simpMessagingTemplate;
+    private final UserRepository userRepository;
+    private final UpdateService updateService;
 
     public User getCurrentUser() {
         String token = userContext.getUserToken();
@@ -50,29 +48,29 @@ public class UserService {
     }
 
     public User getUserByUsername(String username) {
-        return users.stream().filter((u) -> u.getUsername().equals(username)).findAny().orElseThrow(() -> new EntityNotFoundException("Пользователь не найден"));
+        return userRepository.findByUsername(username).orElseThrow(() -> new EntityNotFoundException("Пользователь не найден"));
     }
 
-    public User getUserBySessionId(String sessionId) {
-        return users.stream().filter((u) -> u.getSessionId().equals(sessionId)).findAny().orElse(null);
+    public User getUserById(Long id) {
+        return userRepository.findById(id).orElse(null);
     }
 
     private void save(User user) {
-        synchronized (users) {
-            if (users.stream().anyMatch((u) -> u.getUsername().equals(user.getUsername()))) {
-                throw new DataValidationException("Данное имя пользователя уже занято");
-            }
-            issueToken(user);
-            users.add(user);
+        if (userRepository.existsByUsername(user.getUsername())) {
+            throw new DataValidationException("Данное имя пользователя уже занято");
         }
+
+        userRepository.save(user);
+        issueToken(user);
     }
 
     private void issueToken(User user) {
         int counter = 0;
         while (counter < 10) {
             String token = generateToken();
-            if (users.stream().noneMatch((u) -> u.getToken().equals(token))) {
+            if (!userRepository.existsByToken(token)) {
                 user.setToken(token);
+                userRepository.save(user);
                 return;
             } else {
                 counter++;
@@ -88,11 +86,11 @@ public class UserService {
     }
 
     public User getUserByToken(String token) {
-        return users.stream().filter((u) -> u.getToken().equals(token)).findAny().orElseThrow(() -> new AuthorizationException("Пользователь не найден"));
+        return userRepository.findByToken(token).orElseThrow(() -> new AuthorizationException("Пользователь не найден"));
     }
 
     public void getUpdateResponse() {
-        sendUpdate(getCurrentUser());
+        updateService.sendUpdate(getCurrentUser().getId());
     }
 
     public void changeUsername(String username) {
@@ -101,10 +99,7 @@ public class UserService {
         }
         User user = getCurrentUser();
         user.setUsername(username);
-        sendUpdate(user);
-    }
-
-    public void sendUpdate(User user) {
-        simpMessagingTemplate.convertAndSendToUser(user.getToken(), "/update", new UpdateResponse(user));
+        userRepository.save(user);
+        updateService.sendUpdate(user.getId());
     }
 }

@@ -23,53 +23,45 @@ public class RoomController {
     @PostMapping
     public RoomCodeResponse createPrivateRoom(@RequestBody CreatePrivateRoomRequest request) {
         User user = userService.getCurrentUser();
-        roomService.validateUserNotInRoom(user);
-        Room room = roomService.createPrivateRoom(user, request.capacity(), request.mode());
+        Room room = roomService.createPrivateRoom(user.getId(), request.capacity(), request.mode());
         return new RoomCodeResponse(room.getCode());
     }
 
     @PostMapping("/join/{code}")
     public RoomCodeResponse joinPrivateRoom(@PathVariable String code) {
         User user = userService.getCurrentUser();
-        roomService.validateUserNotInRoom(user);
-        Room room = roomService.joinPrivateRoom(user, code);
+        Room room = roomService.joinPrivateRoom(user.getId(), code);
         return new RoomCodeResponse(room.getCode());
     }
 
     @PostMapping("/join/public")
     public RoomCodeResponse joinPublicRoom() {
         User user = userService.getCurrentUser();
-        roomService.validateUserNotInRoom(user);
-        Room room = roomService.joinPublicRoom(user);
+        Room room = roomService.joinPublicRoom(user.getId());
         return new RoomCodeResponse(room.getCode());
     }
 
     @PostMapping("/leave")
     public void leaveCurrentRoom() {
         User user = userService.getCurrentUser();
-        Room room = roomService.getCurrentRoom(user);
-        roomService.leaveRoom(user, room);
-        userService.sendUpdate(user);
+        roomService.leaveRoom(user.getId());
     }
 
     @PostMapping("/flip/{id}")
     public void flipCard(@PathVariable int id) {
         User user = userService.getCurrentUser();
-        Room room = roomService.getCurrentRoom(user);
-        roomService.flipCard(user, room, id);
+        roomService.flipCard(user.getId(), id);
     }
 
     @PostMapping("/skip")
     public void skipMove() {
         User user = userService.getCurrentUser();
-        Room room = roomService.getCurrentRoom(user);
-        roomService.skipMove(user, room);
+        roomService.skipMove(user.getId());
     }
 
     @PostMapping("/submit")
     public void submitMove() {
         User user = userService.getCurrentUser();
-        Room room = roomService.getCurrentRoom(user);
-        roomService.submitMove(user, room);
+        roomService.submitMove(user.getId());
     }
 }
