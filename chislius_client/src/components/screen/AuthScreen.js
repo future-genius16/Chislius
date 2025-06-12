@@ -21,8 +21,11 @@ const AuthorizationNavbar = () => {
             </Container>
         </Navbar>
         <div className="auth_screen">
-            <Container>
-                <Image src={'images/main.png'} fluid/>
+            <Container className={'d-lg-none'}>
+                <Image src={'images/mobile.svg'} fluid/>
+            </Container>
+            <Container className={'d-none d-lg-block'}>
+                <Image src={'images/main.svg'} fluid/>
             </Container>
         </div>
         <LoginModal

@@ -7,9 +7,11 @@ import RoomNavbar from '../navbar/RoomNavbar'
 import {States} from '../utils/States'
 import {useAuth} from '../../context/TokenContext'
 import Player from '../game/Player'
+import {useToast} from '../utils/useToast'
 
 function GameScreen({player, state, data}) {
     const {token} = useAuth()
+    const {addError} = useToast()
 
     const [cardsList, setCardsList] = useState([])
     const [potionsList, setPotionsList] = useState([])
@@ -75,7 +77,7 @@ function GameScreen({player, state, data}) {
         if (state !== States.MOVE) return
 
         api.submitMove(token).catch((err) => {
-            alert(err.message)
+            addError(err.message)
         })
     }
 
@@ -83,7 +85,7 @@ function GameScreen({player, state, data}) {
         if (state !== States.MOVE) return
 
         api.skipMove(token).catch((err) => {
-            alert(err.message)
+            addError(err.message)
         })
     }
 
@@ -91,7 +93,7 @@ function GameScreen({player, state, data}) {
         if (state !== States.MOVE) return
 
         api.flipCard(token, clickedCard.id).catch((err) => {
-            alert(err.message)
+            addError(err.message)
         })
     }
 
@@ -106,13 +108,12 @@ function GameScreen({player, state, data}) {
                     </div>
                     <div className="col">
                         <h2>Игроки ждут хода:</h2>
-                            {data.players.map(otherPlayer => (<><Player player={otherPlayer}/>
-                                {otherPlayer.id === player.id && ' (Вы)'}<b> Счет: {otherPlayer.score}</b></>
-                            ))}
+                        {data.players.map(otherPlayer => (<><Player player={otherPlayer} hideRating={true}/>
+                            {otherPlayer.id === player.id && ' (Вы)'}<b> | Счет: {otherPlayer.score}    </b></>))}
 
                         <h2>Текущий игрок:</h2>
-                        <Player
-                            player={data.currentPlayer}/>{data.currentPlayer.id === player.id && ' (Вы)'}<b> Счет: {data.currentPlayer.score}</b>
+                        <Player hideRating={true}
+                            player={data.currentPlayer}/>{data.currentPlayer.id === player.id && ' (Вы)'}<b> | Счет: {data.currentPlayer.score}</b>
 
                         {state === States.MOVE && <>
                             <Button size="lg" className="mt-3 mb-3 w-100" onClick={handleSubmit}>Сварить</Button>
@@ -122,8 +123,7 @@ function GameScreen({player, state, data}) {
                 </div>
             </div>
         </Container>
-    </>
-)
+    </>)
 }
 
 export default GameScreen

@@ -2,9 +2,11 @@ import React, {useState} from 'react'
 import {Alert, Button, ButtonGroup, Form, Modal, ToggleButton} from 'react-bootstrap'
 import api from '../../client/ApiClient'
 import {useAuth} from '../../context/TokenContext'
+import {useToast} from '../utils/useToast'
 
 const CreatePrivateModal = ({show, onHide}) => {
     const {token} = useAuth()
+    const {addSuccess} = useToast()
 
     const [capacityValue, setCapacityValue] = useState('2')
     const [modeValue, setModeValue] = useState('0')
@@ -18,6 +20,7 @@ const CreatePrivateModal = ({show, onHide}) => {
         setError('')
 
         api.createPrivateRoom(token, {capacity: capacityValue, mode: modeValue}).then(() => {
+            addSuccess("Приватная комната успешно создана. Теперь можно поделиться кодом комнаты с друзьями!")
             onHide()
         }).catch((err) => {
             setError(err.message)
@@ -31,7 +34,7 @@ const CreatePrivateModal = ({show, onHide}) => {
 
     return (<Modal show={show} onHide={onHide}>
         <Modal.Header closeButton>
-            <Modal.Title>Присоединиться к приватной комнате</Modal.Title>
+            <Modal.Title>Создать приватную комнату</Modal.Title>
         </Modal.Header>
 
         <Form onSubmit={handleSubmit}>

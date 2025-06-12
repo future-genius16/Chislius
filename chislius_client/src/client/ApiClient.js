@@ -44,6 +44,14 @@ class ApiClient {
         }
     }
 
+    async changeAvatar(token, avatar) {
+        try {
+            await this.client.post('/users/avatar', {avatar: avatar}, {headers: {'x-user-token': token}})
+        } catch (error) {
+            throw this.handleError(error)
+        }
+    }
+
     async createPrivateRoom(token, request) {
         try {
             const response = await this.client.post('/rooms', request, {headers: {'x-user-token': token}})
@@ -96,6 +104,14 @@ class ApiClient {
     async submitMove(token) {
         try {
             await this.client.post('/rooms/submit', null, {headers: {'x-user-token': token}})
+        } catch (error) {
+            throw this.handleError(error)
+        }
+    }
+
+    async deleteUser(token) {
+        try {
+            await this.client.post('/users/delete', null, {headers: {'x-user-token': token}})
         } catch (error) {
             throw this.handleError(error)
         }

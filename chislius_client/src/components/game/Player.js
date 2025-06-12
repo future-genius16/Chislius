@@ -1,9 +1,10 @@
 import React from 'react'
-import {Card, Image} from 'react-bootstrap'
+import {Image} from 'react-bootstrap'
 
-function Player({player}) {
+function Player({player, hideRating = false}) {
     return (<>
-        <Image src={'/images/profiles/' + (player.rating * player.rating) % 12 + '.png'} roundedCircle width={32} height={32}/> <b> {player.name}</b>
+        <Image src={'/images/profiles/' + player.avatar + '.png'} roundedCircle width={32} height={32}/>
+        <b> {player.name}</b>{!hideRating && <> | Рейтинг {player.rating}</>}
     </>)
 }
 

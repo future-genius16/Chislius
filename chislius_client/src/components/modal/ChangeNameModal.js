@@ -2,9 +2,11 @@ import React, {useState} from 'react'
 import {Alert, Button, Form, Modal} from 'react-bootstrap'
 import api from '../../client/ApiClient'
 import {useAuth} from '../../context/TokenContext'
+import {useToast} from '../utils/useToast'
 
 const ChangeNameModal = ({show, onHide}) => {
     const {token} = useAuth()
+    const {addSuccess} = useToast()
 
     const [formData, setFormData] = useState({username: ''})
     const [isLoading, setIsLoading] = useState(false)
@@ -22,6 +24,7 @@ const ChangeNameModal = ({show, onHide}) => {
 
         api.changeName(token, formData.username).then(() => {
             console.log("Hide")
+            addSuccess("Имя пользователя успешно изменено")
             onHide()
         }).catch((err) => {
             console.log("Error")

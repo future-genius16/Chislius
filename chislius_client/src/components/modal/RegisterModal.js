@@ -2,9 +2,12 @@ import React, {useState} from 'react'
 import {Alert, Button, Form, Modal} from 'react-bootstrap'
 import api from '../../client/ApiClient'
 import {useAuth} from '../../context/TokenContext'
+import {useToast} from '../utils/useToast'
 
 const RegisterModal = ({show, onHide, onSuccess}) => {
     const {login} = useAuth()
+    const {addSuccess} = useToast()
+
     const [formData, setFormData] = useState({
         username: '', password: '', confirmPassword: ''
     })
@@ -23,15 +26,18 @@ const RegisterModal = ({show, onHide, onSuccess}) => {
 
         if (formData.password === '') {
             setError('Введите пароль')
+            setIsLoading(false)
             return
         }
         if (formData.password !== formData.confirmPassword) {
             setError('Пароли не совпадают')
+            setIsLoading(false)
             return
         }
 
         api.register({username: formData.username, password: formData.password}).then((response => {
             login(response.token)
+            addSuccess("Ваш аккаунт успешно создан")
             onHide()
         })).catch((err) => {
             setError(err.message)
@@ -78,7 +84,7 @@ const RegisterModal = ({show, onHide, onSuccess}) => {
             </Modal.Body>
 
             <Modal.Footer>
-                <Button variant="outline-primary" onClick={onHide}>Cancel</Button>
+                <Button variant="outline-primary" onClick={onHide}>Назад</Button>
                 <Button variant="primary" type="submit" disabled={isLoading}>
                     {isLoading ? 'Загрузка...' : 'Зарегистрироваться'}
                 </Button>
