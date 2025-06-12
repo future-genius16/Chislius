@@ -9,12 +9,10 @@ import ru.hse.chislius_server.game.entity.Game;
 import ru.hse.chislius_server.game.entity.Potion;
 import ru.hse.chislius_server.game.models.Color;
 import ru.hse.chislius_server.game.models.GameMode;
-import ru.hse.chislius_server.game.models.GamePresentation;
 import ru.hse.chislius_server.game.repository.GameRepository;
 
 import java.util.Collections;
 import java.util.LinkedList;
-import java.util.List;
 
 @RequiredArgsConstructor
 @Service
@@ -22,8 +20,13 @@ import java.util.List;
 public class GameServiceImpl implements GameService {
     private final GameRepository gameRepository;
 
+    @Value("${config.game.board_size}")
     private static final int BOARD_SIZE = 4;
+    @Value("${config.game.potions_size}")
     private static final int POTIONS_SIZE = 3;
+    @Value("${config.game.open_cards.min}")
+    private static final int MIN_OPEN_CARD = 2;
+    @Value("${config.game.open_cards.max}")
     private static final int MAX_OPEN_CARD = 3;
 
     @Value("${config.game.wrong-move-cost}")
@@ -48,13 +51,7 @@ public class GameServiceImpl implements GameService {
 
         gameRepository.add(key, game);
         log.info("Game {}: Initialization complete", key);
-        sendChangesToPlayers(game);
         return game;
-    }
-
-    public Game getGame(String key) {
-        log.debug("Get game {} from repository", key);
-        return gameRepository.get(key);
     }
 
     public boolean openCard(Game game, int i) {
@@ -65,7 +62,6 @@ public class GameServiceImpl implements GameService {
                 card.setOpen(true);
                 game.openCards.add(card);
                 log.debug("Game {}: Open card {}", game.key, i);
-                sendChangesToPlayers(game);
                 return true;
             }
         }
@@ -78,6 +74,10 @@ public class GameServiceImpl implements GameService {
         log.debug("Game {}: Try to do move", game.key);
         int sum = 0;
         Color color = null;
+
+        if (game.openCards.size() < MIN_OPEN_CARD || game.openCards.size() > MAX_OPEN_CARD) {
+            return 0;
+        }
 
         for (Card card : game.openCards) {
             sum += card.getValue();
@@ -95,7 +95,6 @@ public class GameServiceImpl implements GameService {
                         log.debug("Game {}: Successful move. Return {}", game.key, potion.getValue());
                         dropOpenCards(game);
                         dropPotion(game, potion);
-                        sendChangesToPlayers(game);
                         return potion.getValue();
                     }
                 }
@@ -104,14 +103,12 @@ public class GameServiceImpl implements GameService {
 
         log.debug("Game {}: Wrond move. Return {}", game.key, WRONG_MOVE_COST);
         flipOpenCards(game);
-        sendChangesToPlayers(game);
         return WRONG_MOVE_COST;
     }
 
     public void skipMove(Game game) {
         log.debug("Game {}: Skip move", game.key);
         flipOpenCards(game);
-        sendChangesToPlayers(game);
     }
 
     public boolean canMove(Game game) {
@@ -119,12 +116,19 @@ public class GameServiceImpl implements GameService {
         for (Potion potion : game.potions) {
             for (int i1 = 0; i1 < game.cards.size(); i1++) {
                 Card card1 = game.cards.get(i1);
-                if (card1 != null && card1.getValue() < potion.getValue() && checkColorNotUnknown(game, card1.getColor().combine(potion.getColor()))) {
+                if (card1 != null && card1.getValue() < potion.getValue() && checkColorNotUnknown(
+                        game,
+                        card1.getColor().combine(potion.getColor())
+                )) {
                     for (int i2 = i1 + 1; i2 < game.cards.size(); i2++) {
                         Card card2 = game.cards.get(i2);
                         if (card2 != null) {
                             if (game.gameMode.equals(GameMode.EASY) || potion.getQuantity() == 2) {
-                                if (card1.getValue() + card2.getValue() == potion.getValue() && checkColorEquals(game, card1.getColor().combine(card2.getColor()), potion.getColor())) {
+                                if (card1.getValue() + card2.getValue() == potion.getValue() && checkColorEquals(
+                                        game,
+                                        card1.getColor().combine(card2.getColor()),
+                                        potion.getColor()
+                                )) {
                                     log.debug("Game {}: Can create {} with {}, {}", game.key, potion, card1, card2);
                                     return true;
                                 }
@@ -132,7 +136,10 @@ public class GameServiceImpl implements GameService {
                             if (game.gameMode.equals(GameMode.EASY) || potion.getQuantity() == 3) {
                                 for (int i3 = i2 + 1; i3 < game.cards.size(); i3++) {
                                     Card card3 = game.cards.get(i3);
-                                    if (card3 != null && card1.getValue() + card2.getValue() + card3.getValue() == potion.getValue() && checkColorEquals(game, card1.getColor().combine(card2.getColor()).combine(card3.getColor()), potion.getColor())) {
+                                    if (card3 != null && card1.getValue() + card2.getValue() + card3.getValue() == potion.getValue() && checkColorEquals(game,
+                                            card1.getColor().combine(card2.getColor()).combine(card3.getColor()),
+                                            potion.getColor()
+                                    )) {
                                         log.debug("Game {}: Can create {} with {}, {}, {}", game.key, potion, card1, card2, card3);
                                         return true;
                                     }
@@ -145,15 +152,6 @@ public class GameServiceImpl implements GameService {
         }
         log.debug("Game {}: Can't find valid moves", game.key);
         return false;
-    }
-
-    public GamePresentation getGamePresentation(Game game) {
-        return new GamePresentation(game.gameMode, List.copyOf(game.potions), List.copyOf(game.cards));
-    }
-
-    private void sendChangesToPlayers(Game game) {
-        String key = game.key;
-        System.out.println("key=" + key + ": " + getGamePresentation(game).toString());
     }
 
     private boolean checkColorEquals(Game game, Color left, Color right) {

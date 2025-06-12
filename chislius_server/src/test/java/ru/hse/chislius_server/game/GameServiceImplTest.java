@@ -6,7 +6,6 @@ import ru.hse.chislius_server.game.entity.Game;
 import ru.hse.chislius_server.game.entity.Potion;
 import ru.hse.chislius_server.game.models.Color;
 import ru.hse.chislius_server.game.models.GameMode;
-import ru.hse.chislius_server.game.models.GamePresentation;
 import ru.hse.chislius_server.game.repository.GameRepository;
 import ru.hse.chislius_server.game.service.GameService;
 import ru.hse.chislius_server.game.service.GameServiceImpl;
@@ -279,13 +278,4 @@ class GameServiceImplTest {
         assertFalse(gameService.canMove(game));
     }
 
-    @Test
-    void getGamePresentation() {
-        Game game = gameService.createGame("Test game", GameMode.EASY);
-        GamePresentation presentation = gameService.getGamePresentation(game);
-
-        assertEquals(game.gameMode, presentation.gameMode());
-        assertEquals(game.cards, presentation.cards());
-        assertEquals(game.potions, presentation.potions());
-    }
 }
