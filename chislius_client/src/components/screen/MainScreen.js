@@ -9,9 +9,11 @@ import {States} from '../utils/States'
 import {over} from 'stompjs'
 import SockJS from 'sockjs-client'
 import api from '../../client/ApiClient'
+import {useToast} from '../utils/useToast'
 
 function MainScreen() {
     const {token, logout} = useAuth()
+    const {addToast, addError} = useToast()
 
     const [state, setState] = useState(null)
     const [player, setPlayer] = useState(null)
@@ -28,6 +30,7 @@ function MainScreen() {
         }).catch(() => {
             if (connected) {
                 console.log('Disconnect')
+                addError("Потеряно соединение с сервером")
                 stompClient.disconnect()
                 setConnected(false)
             }
@@ -38,6 +41,7 @@ function MainScreen() {
         return () => {
             if (connected) {
                 console.log('Disconnect')
+                addError("Потеряно соединение с сервером")
                 stompClient.disconnect()
                 setConnected(false)
             }
@@ -48,7 +52,8 @@ function MainScreen() {
     const onConnected = () => {
         console.log('Connected')
         setConnected(true)
-        stompClient.subscribe('/user/' + token + '/update', onMessage)
+        stompClient.subscribe('/user/' + token + '/update', onUpdate)
+        stompClient.subscribe('/user/' + token + '/message', onMessage)
         api.update(token).catch(() => {
             console.log('Logout')
             logout()
@@ -60,11 +65,16 @@ function MainScreen() {
         })
     }
 
-    const onMessage = (response) => {
+    const onUpdate = (response) => {
         var data = JSON.parse(response.body)
         setData(data.data)
         setState(data.state)
         setPlayer(data.player)
+    }
+
+    const onMessage = (response) => {
+        var data = JSON.parse(response.body)
+        addToast(data)
     }
 
     const onError = (err) => {

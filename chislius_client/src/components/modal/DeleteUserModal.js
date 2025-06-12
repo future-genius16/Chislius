@@ -4,8 +4,8 @@ import api from '../../client/ApiClient'
 import {useAuth} from '../../context/TokenContext'
 import {useToast} from '../utils/useToast'
 
-const LeaveRoomModal = ({show, onHide}) => {
-    const {token} = useAuth()
+const DeleteUserModal = ({show, onHide}) => {
+    const {token, logout} = useAuth()
     const {addSuccess} = useToast()
 
     const [isLoading, setIsLoading] = useState(false)
@@ -16,9 +16,10 @@ const LeaveRoomModal = ({show, onHide}) => {
         setError('')
 
         console.log("Leave")
-        api.leaveRoom(token).then(() => {
+        api.deleteUser(token).then(() => {
             console.log("Comp")
-            addSuccess("Вы успешно покинули комнату")
+            logout()
+            addSuccess("Аккаунт успешно удален")
             onHide()
         }).catch((err) => {
             console.log("Err")
@@ -29,19 +30,20 @@ const LeaveRoomModal = ({show, onHide}) => {
 
     return (<Modal show={show} onHide={onHide}>
         <Modal.Header closeButton>
-            <Modal.Title>Выход</Modal.Title>
+            <Modal.Title>Удаление аккаунта</Modal.Title>
         </Modal.Header>
         <Modal.Body>
             {error && <Alert variant="danger">{error}</Alert>}
-            Вы уверены, что хотите выйти?
+            Вы уверены, что хотите удалить аккаунт?<br/>
+            <b>Это действие невозможно отменить!</b>
         </Modal.Body>
 
         <Modal.Footer>
             <Button variant="outline-primary" onClick={onHide}>Отмена</Button>
             <Button variant="primary" type="submit" onClick={handleClick} disabled={isLoading}>
-                {isLoading ? 'Загрузка...' : 'Выход'}</Button>
+                {isLoading ? 'Загрузка...' : 'Удалить'}</Button>
         </Modal.Footer>
     </Modal>)
 }
 
-export default LeaveRoomModal
+export default DeleteUserModal

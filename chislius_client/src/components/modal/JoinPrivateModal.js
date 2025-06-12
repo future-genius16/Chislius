@@ -22,6 +22,7 @@ const JoinPrivateModal = ({show, onHide}) => {
 
         if (formData.code === '') {
             setError('Введите код комнаты')
+            setIsLoading(false)
             return
         }
 

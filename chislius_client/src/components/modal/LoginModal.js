@@ -19,15 +19,20 @@ const LoginModal = ({show, onHide}) => {
         setIsLoading(true)
         setError(null)
 
-        try {
-            const response = await api.login(formData)
+        if (formData.password === '') {
+            setError('Введите пароль')
+            setIsLoading(false)
+            return
+        }
+
+        api.login({username: formData.username, password: formData.password}).then((response => {
             login(response.token)
             onHide()
-        } catch (err) {
+        })).catch((err) => {
             setError(err.message)
-        } finally {
+        }).finally(() => {
             setIsLoading(false)
-        }
+        })
     }
 
     return (<Modal show={show} onHide={onHide}>

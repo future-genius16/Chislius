@@ -1,22 +1,22 @@
-import {Button, Container, Nav, Navbar, NavDropdown} from 'react-bootstrap'
+import {Button, Container} from 'react-bootstrap'
 import api from '../../client/ApiClient'
 import React, {useState} from 'react'
-import LogoutModal from '../modal/LogoutModal'
-import ChangeNameModal from '../modal/ChangeNameModal'
 import JoinPrivateModal from '../modal/JoinPrivateModal'
 import CreatePrivateModal from '../modal/CreatePrivateModal'
 import {useAuth} from '../../context/TokenContext'
 import MenuNavbar from '../navbar/MenuNavbar'
+import {useToast} from '../utils/useToast'
 
 function MenuScreen({player}) {
     const {token} = useAuth()
+    const {addError} = useToast()
 
     const [showJoinPrivate, setShowJoinPrivate] = useState(false)
     const [showCreatePrivate, setShowCreatePrivate] = useState(false)
 
     const onJoinPublicClick = () => {
         api.joinPublicRoom(token).catch((err) => {
-            console.log(err.message)
+            addError(err.message)
         })
     }
 

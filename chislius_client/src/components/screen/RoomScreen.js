@@ -9,7 +9,7 @@ function RoomScreen({player, data}) {
         <Container className={'mt-3'}>
             <h3>Игроки <small className="text-body-secondary">({data.players.length}/{data.capacity}):</small></h3>
             <ul>
-                {data.players.map(otherPlayer => (<li><Player player={otherPlayer}/>
+                {data.players.map(otherPlayer => (<li className={'mb-1'}><Player player={otherPlayer}/>
                     {otherPlayer.id === player.id && ' (Вы)'}
                 </li>))}
             </ul>
