@@ -6,6 +6,7 @@ import CreatePrivateModal from '../modal/CreatePrivateModal'
 import {useAuth} from '../../context/TokenContext'
 import MenuNavbar from '../navbar/MenuNavbar'
 import {useToast} from '../utils/useToast'
+import RulesModal from '../modal/RulesModal'
 
 function MenuScreen({player}) {
     const {token} = useAuth()
@@ -13,6 +14,7 @@ function MenuScreen({player}) {
 
     const [showJoinPrivate, setShowJoinPrivate] = useState(false)
     const [showCreatePrivate, setShowCreatePrivate] = useState(false)
+    const [showRules, setShowRules] = useState(false)
 
     const onJoinPublicClick = () => {
         api.joinPublicRoom(token).catch((err) => {
@@ -35,6 +37,10 @@ function MenuScreen({player}) {
                 <Button
                     size="lg"
                     className="mb-3 w-100" onClick={() => setShowCreatePrivate(true)}>Создать приватную комнату</Button>
+                <Button
+                    size="lg"
+                    variant={'outline-primary'}
+                    className="mb-3 w-100" onClick={() => setShowRules(true)}>Правила игры</Button>
             </div>
         </Container>
         <JoinPrivateModal
@@ -44,6 +50,10 @@ function MenuScreen({player}) {
         <CreatePrivateModal
             show={showCreatePrivate}
             onHide={() => setShowCreatePrivate(false)}
+        />
+        <RulesModal
+            show={showRules}
+            onHide={() => setShowRules(false)}
         />
     </>)
 }
