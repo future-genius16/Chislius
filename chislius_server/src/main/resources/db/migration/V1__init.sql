@@ -4,5 +4,6 @@ CREATE TABLE users
     username   VARCHAR(255) NOT NULL UNIQUE,
     password   VARCHAR(255) NOT NULL,
     token      VARCHAR(255) UNIQUE,
-    rating     INT
+    rating     INT DEFAULT 0,
+    avatar     INT DEFAULT 0
 );

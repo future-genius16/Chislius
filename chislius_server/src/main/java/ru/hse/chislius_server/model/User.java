@@ -34,6 +34,9 @@ public class User {
     @Column
     private int rating;
 
+    @Column
+    private int avatar;
+
     public User(String username) {
         this.username = username;
     }

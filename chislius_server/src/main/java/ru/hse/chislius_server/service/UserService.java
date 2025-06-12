@@ -47,6 +47,11 @@ public class UserService {
         return user;
     }
 
+    public void deleteUser() {
+        User user = getCurrentUser();
+        userRepository.delete(user);
+    }
+
     public User getUserByUsername(String username) {
         return userRepository.findByUsername(username).orElseThrow(() -> new EntityNotFoundException("Пользователь не найден"));
     }
@@ -99,6 +104,16 @@ public class UserService {
         }
         User user = getCurrentUser();
         user.setUsername(username);
+        userRepository.save(user);
+        updateService.sendUpdate(user.getId());
+    }
+
+    public void changeAvatar(int avatar) {
+        if (avatar < 0 || avatar > 11) {
+            throw new DataValidationException("Некорректный запрос");
+        }
+        User user = getCurrentUser();
+        user.setAvatar(avatar);
         userRepository.save(user);
         updateService.sendUpdate(user.getId());
     }

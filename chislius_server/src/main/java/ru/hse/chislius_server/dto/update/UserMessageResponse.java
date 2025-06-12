@@ -5,10 +5,8 @@ import lombok.RequiredArgsConstructor;
 
 @Data
 @RequiredArgsConstructor
-public class UserResponse {
+public class UserMessageResponse {
     private final long id;
     private final String name;
     private final int avatar;
-    private final int rating;
-    private final int score;
 }
