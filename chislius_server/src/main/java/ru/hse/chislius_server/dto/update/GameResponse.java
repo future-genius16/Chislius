@@ -11,7 +11,7 @@ public class GameResponse {
     private final List<Integer> cards;
 
     public GameResponse(Game game) {
-        potions = game.potions.stream().map(PotionResponse::new).toList();
+        potions = game.potions.stream().map((potion) -> new PotionResponse(potion, game.gameMode)).toList();
         cards = game.cards.stream().map((card -> {
             if (card == null) return null;
             if (!card.isOpen()) {

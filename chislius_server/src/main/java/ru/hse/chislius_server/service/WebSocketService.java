@@ -1,20 +1,19 @@
 package ru.hse.chislius_server.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 import org.springframework.web.socket.messaging.SessionSubscribeEvent;
-import ru.hse.chislius_server.model.User;
-import ru.hse.chislius_server.model.room.Room;
+import ru.hse.chislius_server.exception.DataValidationException;
 import ru.hse.chislius_server.repository.SessionRepository;
 import ru.hse.chislius_server.repository.UserRepository;
 
-import java.util.Optional;
-
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class WebSocketService {
     private final SessionRepository sessionRepository;
     private final UserRepository userRepository;
@@ -27,13 +26,11 @@ public class WebSocketService {
         String destination = headers.getDestination();
 
         if (destination != null && destination.startsWith("/user/") && destination.endsWith("/update")) {
-            String[] parts = destination.split("/"); // Разделяем по "/"
+            String[] parts = destination.split("/");
             String token = parts[2];
             userRepository.findByToken(token).ifPresent(user -> {
                 sessionRepository.addSession(user.getId(), sessionId);
-                System.out.println(sessionId);
-                System.out.println(user);
-                System.out.println("Connect");
+                log.info("Connected {}", user);
             });
         }
     }
@@ -42,31 +39,25 @@ public class WebSocketService {
     public void onDisconnectEvent(SessionDisconnectEvent event) {
         final String sessionId = event.getSessionId();
 
-        Optional<Long> optional = sessionRepository.findUserId(sessionId);
-        if (optional.isPresent()) {
-            final User user = userRepository.findById(optional.get()).orElse(null);
-
-            if (user != null) {
-                Room room = roomService.getCurrentRoom(user.getId());
-                if (room != null) {
-                    new Thread(() -> {
-                        System.out.println("Start delete waiting");
-                        try {
-                            Thread.sleep(5000);
-                        } catch (InterruptedException e) {
-                            throw new RuntimeException(e);
-                        }
-                        sessionRepository.findSessionId(user.getId()).ifPresent(currentSessionId -> {
-                            if (currentSessionId.equals(sessionId)) {
-                                roomService.leaveRoom(user.getId());
-                                System.out.println("End delete waiting");
-                            } else {
-                                System.out.println("User reconnected");
-                            }
-                        });
-                    }).start();
-                }
+        sessionRepository.findUserId(sessionId).flatMap(userRepository::findById).ifPresent((user) -> new Thread(() -> {
+            log.info("Start delete waiting for {}", user);
+            try {
+                Thread.sleep(5000);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
             }
-        }
+            sessionRepository.findSessionId(user.getId()).ifPresent(currentSessionId -> {
+                if (currentSessionId.equals(sessionId)) {
+                    try {
+                        roomService.leaveRoom(user.getId());
+                    } catch (DataValidationException ignored) {
+                    }
+                    sessionRepository.deleteSession(user.getId(), sessionId);
+                    log.info("End delete waiting for {}", user);
+                } else {
+                    log.info("{} reconnected", user);
+                }
+            });
+        }).start());
     }
 }

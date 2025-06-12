@@ -4,8 +4,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import ru.hse.chislius_server.dto.update.GameResponse;
+import ru.hse.chislius_server.dto.update.Message;
+import ru.hse.chislius_server.dto.update.MessageType;
 import ru.hse.chislius_server.dto.update.RoomUpdate;
 import ru.hse.chislius_server.dto.update.UpdateResponse;
+import ru.hse.chislius_server.dto.update.UserMessageResponse;
 import ru.hse.chislius_server.dto.update.UserResponse;
 import ru.hse.chislius_server.exception.DataValidationException;
 import ru.hse.chislius_server.game.entity.Game;
@@ -17,6 +20,7 @@ import ru.hse.chislius_server.repository.RoomRepository;
 import ru.hse.chislius_server.repository.UserRepository;
 
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -69,7 +73,7 @@ public class UpdateService {
         List<UserResponse> players;
         UserResponse currentPlayer;
 
-        if (room.getState() == RoomState.WAIT) {
+        if (room.getState() == RoomState.WAIT || room.getState() == RoomState.FINISH) {
             players = room.getUserIds().stream().map((userId -> getUserResponse(userId, room))).toList();
             currentPlayer = null;
         } else {
@@ -91,19 +95,36 @@ public class UpdateService {
         User user = userRepository.findById(userId).orElseThrow(() -> new DataValidationException("Пользователь не найден"));
         long id = user.getId();
         String name = user.getUsername();
+        int avatar = user.getAvatar();
         int rating = user.getRating();
         int score;
 
         if (room != null) {
             Integer scoreObj = room.getScores().get(user.getId());
-            if (scoreObj != null) {
-                score = scoreObj;
-            } else {
-                score = 0;
-            }
+            score = Objects.requireNonNullElse(scoreObj, 0);
         } else {
             score = 0;
         }
-        return new UserResponse(id, name, rating, score);
+        return new UserResponse(id, name, avatar, rating, score);
+    }
+
+    public void sendMessage(long destinationId, MessageType type, long userId) {
+        userRepository.findById(userId)
+                .ifPresent(user -> userRepository.findById(destinationId)
+                        .ifPresent((destination) -> sendMessage(destination, new Message(type, getUserMessageResponse(user)))));
+    }
+
+    public void sendMessage(long destinationId, MessageType type, long userId, int score) {
+        userRepository.findById(userId)
+                .ifPresent(user -> userRepository.findById(destinationId)
+                        .ifPresent((destination) -> sendMessage(destination, new Message(type, getUserMessageResponse(user), score))));
+    }
+
+    private void sendMessage(User user, Message message) {
+        simpMessagingTemplate.convertAndSendToUser(user.getToken(), "/message", message);
+    }
+
+    private UserMessageResponse getUserMessageResponse(User user) {
+        return new UserMessageResponse(user.getId(), user.getUsername(), user.getAvatar());
     }
 }
