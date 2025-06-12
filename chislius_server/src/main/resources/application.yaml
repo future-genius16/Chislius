@@ -24,3 +24,8 @@ config:
         max: 6
   game:
     wrong-move-cost: -3
+    board_size: 4
+    potions_size: 4
+    open_cards:
+      min: 2
+      max: 3
