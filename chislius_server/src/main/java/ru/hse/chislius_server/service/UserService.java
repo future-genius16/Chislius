@@ -2,6 +2,7 @@ package ru.hse.chislius_server.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import ru.hse.chislius_server.config.context.UserContext;
@@ -33,14 +34,15 @@ public class UserService {
 
     public User registerUser(String username, String password) {
         User user = new User(username);
-        user.setPassword(password);
+        String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt());
+        user.setPassword(hashedPassword);
         save(user);
         return user;
     }
 
     public User loginUser(String username, String password) {
         User user = getUserByUsername(username);
-        if (!user.getPassword().equals(password)) {
+        if (!BCrypt.checkpw(password, user.getPassword())) {
             throw new DataValidationException("Введен неверный пароль");
         }
         issueToken(user);
